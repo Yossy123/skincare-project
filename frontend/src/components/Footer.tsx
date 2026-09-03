@@ -1,0 +1,130 @@
+import React from 'react';
+import Link from 'next/link';
+import { Heart, Sparkles, Shield, Truck, RefreshCcw } from 'lucide-react';
+
+export function Footer() {
+  return (
+    <footer className="bg-stone-100 dark:bg-zinc-900 border-t border-rose-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 text-sm">
+      {/* Value Propositions Banner */}
+      <div className="border-b border-rose-100/80 dark:border-zinc-800/80 py-8 bg-white/40 dark:bg-zinc-950/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm">100% Authentic</h4>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Directly sourced premium formulations</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 shrink-0">
+              <Truck className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm">Express Shipping</h4>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Fast nationwide courier delivery</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 shrink-0">
+              <Shield className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm">Dermatologist Tested</h4>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Cruelty-free & clean ingredients</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 shrink-0">
+              <RefreshCcw className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm">Easy Returns</h4>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">7-day satisfaction guarantee</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Footer Links */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+        {/* Brand Info */}
+        <div className="space-y-3 md:col-span-1">
+          <div className="flex items-center gap-2">
+            <span className="w-7 h-7 rounded-full bg-gradient-to-tr from-rose-500 to-pink-400 flex items-center justify-center text-white font-serif font-bold text-xs">
+              L
+            </span>
+            <span className="font-serif tracking-widest text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              LUMIÈRE BEAUTÉ
+            </span>
+          </div>
+          <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+            Elevating everyday beauty with scientifically formulated skincare, luminous makeup, and artisanal fragrances.
+          </p>
+        </div>
+
+        {/* Categories */}
+        <div>
+          <h5 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs tracking-wider uppercase mb-3">
+            Collections
+          </h5>
+          <ul className="space-y-2 text-xs">
+            <li><Link href="/categories/skincare" className="hover:text-rose-500 transition-colors">Skincare</Link></li>
+            <li><Link href="/categories/makeup" className="hover:text-rose-500 transition-colors">Makeup</Link></li>
+            <li><Link href="/categories/fragrance" className="hover:text-rose-500 transition-colors">Fragrance</Link></li>
+            <li><Link href="/categories/body-care" className="hover:text-rose-500 transition-colors">Body Care</Link></li>
+            <li><Link href="/categories/hair-care" className="hover:text-rose-500 transition-colors">Hair Care</Link></li>
+          </ul>
+        </div>
+
+        {/* Quick Links */}
+        <div>
+          <h5 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs tracking-wider uppercase mb-3">
+            Customer Care
+          </h5>
+          <ul className="space-y-2 text-xs">
+            <li><Link href="/products" className="hover:text-rose-500 transition-colors">Product Catalog</Link></li>
+            <li><span className="hover:text-rose-500 cursor-pointer">Shipping & Delivery</span></li>
+            <li><span className="hover:text-rose-500 cursor-pointer">Order Tracking</span></li>
+            <li><span className="hover:text-rose-500 cursor-pointer">Privacy Policy</span></li>
+            <li><span className="hover:text-rose-500 cursor-pointer">Terms of Service</span></li>
+          </ul>
+        </div>
+
+        {/* Newsletter placeholder */}
+        <div>
+          <h5 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs tracking-wider uppercase mb-3">
+            Join the Club
+          </h5>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+            Subscribe to receive exclusive beauty drops and botanical skincare tips.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="px-3 py-2 text-xs rounded-xl bg-white dark:bg-zinc-800 border border-rose-200/70 dark:border-zinc-700 w-full focus:outline-hidden focus:ring-2 focus:ring-rose-400"
+            />
+            <button
+              className="px-3 py-2 text-xs bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-medium transition-colors shrink-0 cursor-pointer"
+            >
+              Join
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Copyright */}
+      <div className="border-t border-rose-100 dark:border-zinc-800/80 py-6 text-center text-xs text-zinc-500 dark:text-zinc-500">
+        <p className="flex items-center justify-center gap-1">
+          <span>&copy; {new Date().getFullYear()} Lumière Beauté. Built with Next.js, Laravel & Tailwind CSS.</span>
+          <Heart className="w-3.5 h-3.5 text-rose-500 inline fill-rose-500" />
+        </p>
+      </div>
+    </footer>
+  );
+}

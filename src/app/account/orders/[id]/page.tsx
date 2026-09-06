@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { useAuthStore, useAuthHydrated } from '@/store/useAuthStore';
-import { fetchOrderById, Order } from '@/lib/api';
+import { createPayment, fetchOrderById, Order } from '@/lib/api';
 import {
   ShoppingBag,
   Package,
@@ -32,6 +32,19 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+
+  const handlePayment = async () => {
+    if (!token || !order) return;
+    setPaying(true); setError(null);
+    try {
+      const payment = await createPayment(order.id, token);
+      if (payment.redirect_url) window.location.assign(payment.redirect_url);
+      else setError('Midtrans tidak mengembalikan halaman pembayaran.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Payment preparation failed.');
+    } finally { setPaying(false); }
+  };
 
   useEffect(() => {
     if (!isAuthHydrated) return;
@@ -242,17 +255,18 @@ export default function OrderDetailPage() {
                 {/* Payment Gateway Action (Phase 8 Midtrans) */}
                 <div className="space-y-3 pt-2">
                   <button
-                    disabled
+                    disabled={paying || order.status.toUpperCase() !== 'PENDING_PAYMENT'}
+                    onClick={handlePayment}
                     className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 opacity-90 cursor-not-allowed shadow-md shadow-rose-500/20"
                   >
                     <CreditCard className="w-4 h-4" />
-                    <span>Pay Now with Midtrans</span>
+                    <span>{paying ? 'Preparing payment...' : 'Pay Now with Midtrans'}</span>
                   </button>
 
                   <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-800 dark:text-amber-200 text-[11px] leading-relaxed flex items-start gap-2">
                     <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <span>
-                      <strong>Order Created:</strong> Your stock has been reserved and order snapshots are saved. Midtrans Snap payment gateway integration will be completed in the next phase.
+                      <strong>Secure payment:</strong> Payment status is confirmed by Midtrans server notification.
                     </span>
                   </div>
                 </div>

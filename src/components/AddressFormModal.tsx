@@ -31,8 +31,6 @@ function AddressFormInner({
   const [postalCode, setPostalCode] = useState(initialData?.postal_code || '12110');
   const [address, setAddress] = useState(initialData?.address_line || initialData?.address || '');
   const [addressDetail, setAddressDetail] = useState(initialData?.address_detail || '');
-  const [rajaongkirDestinationId] = useState<number | null>(initialData?.rajaongkir_destination_id || null);
-
   const [isDefault, setIsDefault] = useState(Boolean(initialData?.is_default));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +59,6 @@ function AddressFormInner({
           address,
           address_line: address,
           address_detail: addressDetail,
-          rajaongkir_destination_id: rajaongkirDestinationId || undefined,
           is_default: isDefault,
         },
         initialData?.id

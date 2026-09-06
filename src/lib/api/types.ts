@@ -37,7 +37,7 @@ export interface Address {
   address: string;
   address_line?: string | null;
   address_detail?: string | null;
-  rajaongkir_destination_id?: number | null;
+  biteship_area_id?: string | null;
   is_default: boolean;
   created_at?: string;
   updated_at?: string;
@@ -55,7 +55,7 @@ export interface AddressPayload {
   address: string;
   address_line?: string | null;
   address_detail?: string | null;
-  rajaongkir_destination_id?: number | null;
+  biteship_area_id?: string | null;
   is_default?: boolean;
 }
 
@@ -206,6 +206,7 @@ export interface ShippingRatePayload {
   destination: string | number;
   weight: number;
   couriers?: string[] | string;
+  items?: Array<{ product_id: number; quantity: number }>;
 }
 
 export interface OrderStorePayload {
@@ -231,6 +232,9 @@ export interface OrderItem {
 
 export interface Shipment {
   id: number;
+  biteship_order_id?: string | null;
+  biteship_tracking_id?: string | null;
+  biteship_waybill_id?: string | null;
   courier: string;
   service: string;
   tracking_number: string | null;
@@ -242,6 +246,9 @@ export interface Payment {
   payment_type: string | null;
   status: string;
   amount: number;
+  snap_token?: string | null;
+  redirect_url?: string | null;
+  expires_at?: string | null;
 }
 
 export interface Order {

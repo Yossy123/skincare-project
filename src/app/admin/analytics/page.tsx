@@ -163,7 +163,7 @@ export default function AdminAnalyticsPage() {
           { key: 'products', label: 'Product Performance', icon: Package },
           { key: 'customers', label: 'Customer Retention', icon: Users },
           { key: 'payments', label: 'Midtrans Payments', icon: CreditCard },
-          { key: 'shipping', label: 'RajaOngkir Courier', icon: Truck },
+          { key: 'shipping', label: 'Courier & Shipping', icon: Truck },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -467,7 +467,7 @@ export default function AdminAnalyticsPage() {
         </div>
       )}
 
-      {/* Tab Content 6: RajaOngkir Shipping */}
+      {/* Tab Content 6: Courier & Shipping */}
       {activeTab === 'shipping' && shippingData && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -493,7 +493,7 @@ export default function AdminAnalyticsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <HorizontalBreakdownList
-              title="Courier Volume Usage (RajaOngkir)"
+              title="Courier Volume Usage"
               items={shippingData.courier_usage.map((c) => ({
                 label: c.courier,
                 count: c.orders_count,

@@ -2,7 +2,7 @@ import { API_BASE_URL } from './client';
 import type { ShippingRatePayload, ShippingRate, DestinationResult } from './types';
 
 /**
- * Calculate domestic shipping rates from couriers (JNE, SiCepat, J&T, POS, TIKI).
+ * Calculate domestic shipping rates from couriers via Biteship.
  */
 export async function fetchShippingRates(
   payload: ShippingRatePayload,
@@ -37,7 +37,7 @@ export async function fetchShippingRates(
 }
 
 /**
- * Search RajaOngkir domestic destination locations.
+ * Search domestic destination locations via Biteship areas API.
  */
 export async function searchDestinations(query: string): Promise<DestinationResult[]> {
   const res = await fetch(`${API_BASE_URL}/shipping/destinations?search=${encodeURIComponent(query)}`, {

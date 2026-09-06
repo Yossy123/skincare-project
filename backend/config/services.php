@@ -35,17 +35,26 @@ return [
         ],
     ],
 
-    'rajaongkir' => [
-        'api_key' => env('RAJAONGKIR_API_KEY'),
-        'base_url' => env('RAJAONGKIR_BASE_URL', 'https://rajaongkir.komerce.id/api/v1/'),
-        'origin_id' => (int) env('RAJAONGKIR_ORIGIN_ID', 17547),
-        'timeout' => (int) env('RAJAONGKIR_TIMEOUT', 10),
+    'biteship' => [
+        'api_key' => env('BITESHIP_API_KEY'),
+        'base_url' => rtrim(preg_replace('#/v1(/orders)?/?$#', '', (string) env('BITESHIP_BASE_URL', 'https://api.biteship.com')), '/'),
+        'origin_postal_code' => (int) env('BITESHIP_ORIGIN_POSTAL_CODE', 12220),
+        'origin_area_id' => env('BITESHIP_ORIGIN_AREA_ID', 'IDNP6IDNC417IDND2093IDNZ12220'),
+        'origin_address' => env('BITESHIP_ORIGIN_ADDRESS', 'Jl. Kebayoran Lama No. 12, Jakarta Selatan'),
+        'origin_contact_name' => env('BITESHIP_ORIGIN_CONTACT_NAME', 'Lumiere Beaute Store'),
+        'origin_contact_phone' => env('BITESHIP_ORIGIN_CONTACT_PHONE', '081234567890'),
+        'timeout' => (int) env('BITESHIP_TIMEOUT', 10),
+        'webhook_signature_key' => env('BITESHIP_WEBHOOK_SIGNATURE_KEY', 'X-Biteship-Signature'),
+        'webhook_secret' => env('BITESHIP_WEBHOOK_SECRET', ''),
     ],
 
     'midtrans' => [
-        'server_key' => env('MIDTRANS_SERVER_KEY', 'SB-Mid-server-TEST_KEY'),
-        'client_key' => env('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-TEST_KEY'),
+        'server_key' => env('MIDTRANS_SERVER_KEY'),
+        'client_key' => env('MIDTRANS_CLIENT_KEY'),
         'is_production' => (bool) env('MIDTRANS_IS_PRODUCTION', false),
+        'snap_base_url' => env('MIDTRANS_IS_PRODUCTION', false)
+            ? 'https://app.midtrans.com'
+            : 'https://app.sandbox.midtrans.com',
         'api_base_url' => env('MIDTRANS_IS_PRODUCTION', false)
             ? 'https://api.midtrans.com/v2/'
             : 'https://api.sandbox.midtrans.com/v2/',

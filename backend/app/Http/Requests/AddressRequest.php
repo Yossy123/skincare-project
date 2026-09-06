@@ -49,10 +49,10 @@ class AddressRequest extends FormRequest
             'city' => ['required', 'string', 'max:255'],
             'district' => ['required', 'string', 'max:255'],
             'postal_code' => ['required', 'string', 'max:10'],
+            'biteship_area_id' => ['nullable', 'string', 'max:100'],
             'address' => ['required', 'string'],
             'address_line' => ['nullable', 'string'],
             'address_detail' => ['nullable', 'string'],
-            'rajaongkir_destination_id' => ['nullable', 'integer'],
             'is_default' => ['sometimes', 'boolean'],
         ];
     }

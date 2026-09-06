@@ -20,7 +20,7 @@
 ## Customer Shipping Addresses (auth:sanctum)
 
 - `GET /addresses` - List customer addresses (default address first).
-- `POST /addresses` - Create new shipping address with automatic server-side RajaOngkir destination resolution.
+- `POST /addresses` - Create a shipping address with Biteship-compatible postal code/area data.
 - `PUT /addresses/{id}` - Update existing address.
 - `DELETE /addresses/{id}` - Delete address (auto-promotes remaining default).
 
@@ -34,7 +34,7 @@
 - `city` (`string`, required)
 - `district` (`string`, required)
 - `postal_code` (`string`, required)
-- `rajaongkir_destination_id` (`integer`, auto-resolved server-side)
+- `biteship_area_id` (`string`, optional Biteship area identifier)
 - `is_default` (`boolean`)
 
 ---
@@ -53,19 +53,19 @@
 
 ---
 
-## Shipping & Courier Integration (RajaOngkir Komerce API v1)
+## Shipping & Courier Integration (Biteship API v1)
 
 ### 1. Calculate Shipping Rates
-Calculates and normalizes domestic shipping delivery rates from supported couriers (JNE, SiCepat, J&T, POS Indonesia, TIKI) based on store origin (`RAJAONGKIR_ORIGIN_ID`), destination ID/location, and package weight.
+Calculates and normalizes domestic shipping delivery rates from supported couriers (JNE, SiCepat, J&T, POS Indonesia, TIKI, AnterAja, GoSend, Grab, Wahana) based on store origin, destination postal code / area ID, and authoritative package weight.
 
 - **URL**: `/shipping/rates`
 - **Method**: `POST`
 - **Request Body**:
   ```json
   {
-    "destination": "17547",
+    "destination": "40132",
     "weight": 350,
-    "couriers": "jne:sicepat:jnt:tiki:pos"
+    "couriers": "jne,sicepat,jnt,tiki,pos"
   }
   ```
 - **Response (`200 OK`)**:
@@ -75,20 +75,20 @@ Calculates and normalizes domestic shipping delivery rates from supported courie
       {
         "courier": "SICEPAT",
         "courier_name": "SiCepat Express",
-        "service": "REG",
-        "description": "Reguler Service",
-        "price": 8100,
-        "formatted_price": "Rp 8.100",
-        "etd": "1-2",
-        "formatted_etd": "1-2 Hari"
+        "service": "HALU",
+        "description": "Hemat Reguler",
+        "price": 7500,
+        "formatted_price": "Rp 7.500",
+        "etd": "2-3",
+        "formatted_etd": "2-3 Hari"
       },
       {
         "courier": "JNE",
         "courier_name": "Jalur Nugraha Ekakurir (JNE)",
         "service": "REG",
         "description": "Layanan Reguler",
-        "price": 9000,
-        "formatted_price": "Rp 9.000",
+        "price": 10000,
+        "formatted_price": "Rp 10.000",
         "etd": "1-2",
         "formatted_etd": "1-2 Hari"
       }
@@ -99,7 +99,12 @@ Calculates and normalizes domestic shipping delivery rates from supported courie
 ### 2. Search Domestic Destinations
 - **URL**: `/shipping/destinations?search=Jakarta Selatan`
 - **Method**: `GET`
-- **Response (`200 OK`)**: Returns domestic destination records with subdistrict, district, city, province, postal code, and RajaOngkir destination `id`.
+- **Response (`200 OK`)**: Returns domestic area records with subdistrict, district, city, province, postal code, and Biteship area `id`.
+
+### 3. Biteship Webhook
+- **URL**: `/shipping/webhook/biteship`
+- **Method**: `POST`
+- **Description**: Receives asynchronous shipment status events from Biteship and updates order and shipment lifecycle states idempotently.
 
 ---
 

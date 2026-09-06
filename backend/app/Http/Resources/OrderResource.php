@@ -35,6 +35,9 @@ class OrderResource extends JsonResource
             'shipment' => $this->whenLoaded('shipment', function () {
                 return $this->shipment ? [
                     'id' => $this->shipment->id,
+                    'biteship_order_id' => $this->shipment->biteship_order_id,
+                    'biteship_tracking_id' => $this->shipment->biteship_tracking_id,
+                    'biteship_waybill_id' => $this->shipment->biteship_waybill_id,
                     'courier' => $this->shipment->courier,
                     'service' => $this->shipment->service,
                     'tracking_number' => $this->shipment->tracking_number,
@@ -47,6 +50,9 @@ class OrderResource extends JsonResource
                     'payment_type' => $this->payment->payment_type,
                     'status' => $this->payment->status,
                     'amount' => (float) $this->payment->amount,
+                    'snap_token' => $this->payment->snap_token,
+                    'redirect_url' => $this->payment->redirect_url,
+                    'expires_at' => $this->payment->expires_at?->toIso8601String(),
                 ] : null;
             }),
             'created_at' => $this->created_at?->toIso8601String(),

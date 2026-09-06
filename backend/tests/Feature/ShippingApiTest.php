@@ -2,9 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Services\BiteshipService;
+use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use App\Services\RajaOngkirService;
 use Tests\TestCase;
 
 class ShippingApiTest extends TestCase
@@ -12,42 +13,56 @@ class ShippingApiTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Test successful calculation and retrieval of normalized shipping rates with mocked RajaOngkir Komerce API.
+     * Test successful calculation and retrieval of normalized shipping rates with mocked Biteship Rates API.
      */
     public function test_can_calculate_and_retrieve_normalized_shipping_rates(): void
     {
+        $product = Product::factory()->create([
+            'price' => 10000,
+            'weight' => 350,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
         Http::fake([
-            'rajaongkir.komerce.id/api/v1/calculate/domestic-cost*' => Http::response([
-                'meta' => [
-                    'message' => 'Success Calculate Domestic Shipping cost',
-                    'code' => 200,
-                    'status' => 'success',
-                ],
-                'data' => [
+            'api.biteship.com/v1/rates/couriers*' => Http::response([
+                'success' => true,
+                'message' => 'Success get rates',
+                'object' => 'rates',
+                'pricing' => [
                     [
-                        'name' => 'Jalur Nugraha Ekakurir (JNE)',
-                        'code' => 'jne',
-                        'service' => 'REG',
+                        'company' => 'jne',
+                        'courier_name' => 'JNE',
+                        'courier_code' => 'jne',
+                        'courier_service_name' => 'Reguler',
+                        'courier_service_code' => 'reg',
                         'description' => 'Layanan Reguler',
-                        'cost' => 10000,
-                        'etd' => '1-2 day',
+                        'duration' => '1 - 2 days',
+                        'price' => 10000,
+                        'service_type' => 'standard',
                     ],
                     [
-                        'name' => 'SiCepat Express',
-                        'code' => 'sicepat',
-                        'service' => 'HALU',
-                        'description' => 'Harga Mulai Lima Ribu',
-                        'cost' => 7500,
-                        'etd' => '2-3 day',
+                        'company' => 'sicepat',
+                        'courier_name' => 'SiCepat Express',
+                        'courier_code' => 'sicepat',
+                        'courier_service_name' => 'HALU',
+                        'courier_service_code' => 'halu',
+                        'description' => 'Hemat Reguler',
+                        'duration' => '2 - 3 days',
+                        'price' => 7500,
+                        'service_type' => 'economy',
                     ],
                 ],
             ], 200),
         ]);
 
         $payload = [
-            'destination' => '17547', // Destination ID
+            'destination' => '40132', // 5-digit destination postal code
             'weight' => 350, // 350 grams
-            'couriers' => 'jne:sicepat',
+            'couriers' => 'jne,sicepat',
+            'items' => [
+                ['product_id' => $product->id, 'quantity' => 1],
+            ],
         ];
 
         $response = $this->postJson('/api/shipping/rates', $payload);
@@ -76,53 +91,45 @@ class ShippingApiTest extends TestCase
     }
 
     /**
-     * Test shipping rate calculation gracefully handles provider failure and returns fallback estimates.
+     * Provider failures must be surfaced instead of silently appearing as zero rates.
      */
     public function test_shipping_rates_handles_provider_failure_gracefully(): void
     {
+        $product = Product::factory()->create([
+            'price' => 10000,
+            'weight' => 350,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
         Http::fake([
-            'rajaongkir.komerce.id/api/v1/calculate/domestic-cost*' => Http::response(['message' => 'Service Unavailable'], 503),
+            'api.biteship.com/v1/rates/couriers*' => Http::response(['message' => 'Service Unavailable'], 503),
         ]);
 
         $payload = [
-            'destination' => '17547',
+            'destination' => '40132',
             'weight' => 1000,
-            'couriers' => 'jne:sicepat',
+            'couriers' => 'jne,sicepat',
+            'items' => [['product_id' => $product->id, 'quantity' => 1]],
         ];
 
         $response = $this->postJson('/api/shipping/rates', $payload);
 
-        $response->assertStatus(200);
-        $data = $response->json('data');
-        $this->assertNotEmpty($data);
-        $this->assertIsString($data[0]['courier']);
-        $this->assertGreaterThan(0, $data[0]['price']);
+        $response->assertStatus(502)
+            ->assertJsonPath('message', 'Biteship shipping rates are currently unavailable. Please top up or check your Biteship account balance.');
     }
 
     /**
-     * Fallback rates must never include couriers outside the requested scope.
-     */
-    public function test_fallback_rates_respect_requested_couriers(): void
-    {
-        $rates = app(RajaOngkirService::class)->getFallbackRates(17547, 2200, 1000, 'jne:sicepat');
-
-        $this->assertNotEmpty($rates);
-        $this->assertEqualsCanonicalizing(['JNE', 'SICEPAT'], array_values(array_unique(array_column($rates, 'courier'))));
-        $this->assertNotContains('POS', array_column($rates, 'courier'));
-        $this->assertNotContains('TIKI', array_column($rates, 'courier'));
-    }
-
-    /**
-     * Destination resolution failure must be reported, never replaced by a default city.
+     * Destination resolution failure must be rejected, never replaced by default city.
      */
     public function test_destination_resolution_failure_is_rejected_without_fallback(): void
     {
         Http::fake([
-            'rajaongkir.komerce.id/api/v1/destination/domestic-destination*' => Http::response([], 503),
+            'api.biteship.com/v1/maps/areas*' => Http::response(['areas' => []], 200),
         ]);
 
         $response = $this->postJson('/api/shipping/rates', [
-            'destination' => 'an-invalid-destination-' . uniqid(),
+            'destination' => 'invalid-nonexistent-location-' . uniqid(),
             'weight' => 500,
             'couriers' => 'jne',
         ]);
@@ -137,7 +144,7 @@ class ShippingApiTest extends TestCase
     public function test_shipping_rates_validation_fails_on_zero_or_negative_weight(): void
     {
         $response = $this->postJson('/api/shipping/rates', [
-            'destination' => '17547',
+            'destination' => '12220',
             'weight' => 0,
         ]);
 
@@ -151,7 +158,7 @@ class ShippingApiTest extends TestCase
     public function test_shipping_rates_validation_fails_on_excessive_weight(): void
     {
         $response = $this->postJson('/api/shipping/rates', [
-            'destination' => '17547',
+            'destination' => '12220',
             'weight' => 50000,
         ]);
 
@@ -178,42 +185,41 @@ class ShippingApiTest extends TestCase
     public function test_api_key_is_not_exposed_in_response(): void
     {
         Http::fake([
-            'rajaongkir.komerce.id/api/v1/calculate/domestic-cost*' => Http::response(['data' => []], 200),
+            'api.biteship.com/v1/rates/couriers*' => Http::response(['pricing' => []], 200),
         ]);
 
-        $apiKey = config('services.rajaongkir.api_key');
+        $apiKey = (string) config('services.biteship.api_key');
 
         $response = $this->postJson('/api/shipping/rates', [
-            'destination' => '17547',
+            'destination' => '12220',
             'weight' => 300,
         ]);
 
         $response->assertStatus(200);
         $content = $response->getContent();
-        $this->assertStringNotContainsString($apiKey, $content);
+        if (!empty($apiKey)) {
+            $this->assertStringNotContainsString($apiKey, $content);
+        }
     }
 
     /**
-     * Test can search domestic destination locations.
+     * Test can search domestic destination locations via Biteship areas API.
      */
     public function test_can_search_domestic_destinations(): void
     {
         Http::fake([
-            'rajaongkir.komerce.id/api/v1/destination/domestic-destination*' => Http::response([
-                'meta' => [
-                    'message' => 'Success Get Domestic Destinations',
-                    'code' => 200,
-                    'status' => 'success',
-                ],
-                'data' => [
+            'api.biteship.com/v1/maps/areas*' => Http::response([
+                'success' => true,
+                'areas' => [
                     [
-                        'id' => 17547,
-                        'label' => 'GROGOL SELATAN, KEBAYORAN LAMA, JAKARTA SELATAN, DKI JAKARTA, 12220',
-                        'province_name' => 'DKI JAKARTA',
-                        'city_name' => 'JAKARTA SELATAN',
-                        'district_name' => 'KEBAYORAN LAMA',
-                        'subdistrict_name' => 'GROGOL SELATAN',
-                        'zip_code' => '12220',
+                        'id' => 'IDNP6IDNC417IDND2093IDNZ12220',
+                        'name' => 'Grogol Selatan, Kebayoran Lama, Jakarta Selatan, DKI Jakarta, 12220',
+                        'country_name' => 'Indonesia',
+                        'administrative_division_level_1_name' => 'DKI Jakarta',
+                        'administrative_division_level_2_name' => 'Jakarta Selatan',
+                        'administrative_division_level_3_name' => 'Kebayoran Lama',
+                        'administrative_division_level_4_name' => 'Grogol Selatan',
+                        'postal_code' => 12220,
                     ],
                 ],
             ], 200),
@@ -231,6 +237,7 @@ class ShippingApiTest extends TestCase
                     ],
                 ],
             ])
-            ->assertJsonPath('data.0.id', 17547);
+            ->assertJsonPath('data.0.id', 'IDNP6IDNC417IDND2093IDNZ12220')
+            ->assertJsonPath('data.0.zip_code', '12220');
     }
 }

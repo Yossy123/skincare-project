@@ -57,6 +57,8 @@ export { fetchShippingRates, searchDestinations } from './shipping';
 
 // Orders (customer)
 export { createOrder, fetchOrders, fetchOrderById } from './orders';
+export { createPayment } from './payments';
+export type { PaymentResponse } from './payments';
 
 // Admin — Dashboard
 export type { AdminKPICard, AdminDashboardOverview } from './admin/dashboard';
@@ -97,11 +99,10 @@ export {
   adminCancelOrder,
 } from './admin/orders';
 
-// Admin — Product & Category Management
+// Admin — Product Management
 export type {
   AdminProductListItem,
   AdminProductPaginatedResponse,
-  AdminCategoryItem,
 } from './admin/products';
 export {
   fetchAdminProducts,
@@ -109,12 +110,19 @@ export {
   adminUpdateProduct,
   adminToggleProduct,
   adminAdjustStock,
+} from './admin/products';
+
+// Admin — Category Management
+export type {
+  AdminCategoryItem,
+} from './admin/categories';
+export {
   fetchAdminCategories,
   adminCreateCategory,
   adminUpdateCategory,
   adminToggleCategory,
   adminDeleteCategory,
-} from './admin/products';
+} from './admin/categories';
 
 // Admin — Customer Management
 export type {

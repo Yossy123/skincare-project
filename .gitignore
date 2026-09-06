@@ -22,3 +22,6 @@ database/*.sqlite
 .vscode/
 .DS_Store
 Thumbs.db
+
+frontend/
+backend/

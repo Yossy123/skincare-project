@@ -15,6 +15,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\NotificationProviderInterface::class,
             \App\Services\Notifications\LogNotificationProvider::class
         );
+
+        $this->app->bind(
+            \App\Contracts\ShippingProviderInterface::class,
+            \App\Services\BiteshipService::class
+        );
     }
 
     /**

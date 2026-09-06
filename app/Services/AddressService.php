@@ -10,10 +10,6 @@ use Illuminate\Validation\ValidationException;
 
 class AddressService
 {
-    public function __construct(
-        protected RajaOngkirService $rajaOngkirService
-    ) {}
-
     /**
      * Retrieve all addresses belonging to the user (default address first).
      *
@@ -29,14 +25,18 @@ class AddressService
     }
 
     /**
-     * Create a new address for the user with automatic RajaOngkir destination resolution.
+     * Create a new address for the user.
      *
      * @param User $user
      * @param array<string, mixed> $data
      * @return Address
+     *
+     * @throws ValidationException
      */
     public function createAddress(User $user, array $data): Address
     {
+        $this->validateAddressPayload($data);
+
         return DB::transaction(function () use ($user, $data) {
             $existingCount = $user->addresses()->count();
             $shouldBeDefault = !empty($data['is_default']) || $existingCount === 0;
@@ -48,20 +48,18 @@ class AddressService
             $data['user_id'] = $user->id;
             $data['is_default'] = $shouldBeDefault;
 
-            // Always resolve from the submitted address fields on the server.
-            // Never trust a destination ID supplied by the client.
-            $data['rajaongkir_destination_id'] = $this->resolveDestinationId($data);
-
             return Address::create($data);
         });
     }
 
     /**
-     * Update an address with automatic RajaOngkir destination resolution.
+     * Update an existing address.
      *
      * @param Address $address
      * @param array<string, mixed> $data
      * @return Address
+     *
+     * @throws ValidationException
      */
     public function updateAddress(Address $address, array $data): Address
     {
@@ -71,17 +69,6 @@ class AddressService
                     ->where('id', '!=', $address->id)
                     ->where('is_default', true)
                     ->update(['is_default' => false]);
-            }
-
-            $locationFields = ['district', 'city', 'province', 'postal_code'];
-            $locationChanged = count(array_intersect(array_keys($data), $locationFields)) > 0;
-
-            // Re-resolve when the location changes or the stored destination is missing.
-            // Ignore any client-provided destination ID.
-            unset($data['rajaongkir_destination_id']);
-            if ($locationChanged || empty($address->rajaongkir_destination_id)) {
-                $mergedData = array_merge($address->toArray(), $data);
-                $data['rajaongkir_destination_id'] = $this->resolveDestinationId($mergedData);
             }
 
             $address->update($data);
@@ -134,32 +121,20 @@ class AddressService
     }
 
     /**
-     * Resolve RajaOngkir destination ID server-side from address fields.
+     * Validate address data fields for shipping readiness.
      *
      * @param array<string, mixed> $data
-     * @return int
+     * @return void
+     *
+     * @throws ValidationException
      */
-    protected function resolveDestinationId(array $data): int
+    protected function validateAddressPayload(array $data): void
     {
-        $district = $data['district'] ?? '';
-        $city = $data['city'] ?? '';
-        $province = $data['province'] ?? '';
-        $postalCode = $data['postal_code'] ?? '';
-
-        $query = trim("{$district} {$city} {$province} {$postalCode}");
-        if (empty($query)) {
-            $query = trim("{$city} {$province}");
+        $postalCode = trim((string) ($data['postal_code'] ?? ''));
+        if (!empty($postalCode) && !preg_match('/^\d{5}$/', $postalCode)) {
+            throw ValidationException::withMessages([
+                'postal_code' => ['Postal code must be a valid 5-digit number.'],
+            ]);
         }
-
-        if (!empty($query)) {
-            $destinations = $this->rajaOngkirService->searchDestinations($query);
-            if (!empty($destinations) && isset($destinations[0]['id'])) {
-                return (int) $destinations[0]['id'];
-            }
-        }
-
-        throw ValidationException::withMessages([
-            'address' => ['Unable to resolve this address to a valid shipping destination. Please verify the location and try again.'],
-        ]);
     }
 }

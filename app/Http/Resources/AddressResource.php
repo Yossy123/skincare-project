@@ -31,7 +31,7 @@ class AddressResource extends JsonResource
             'address' => $this->address,
             'address_line' => $this->address_line,
             'address_detail' => $this->address_detail,
-            'rajaongkir_destination_id' => $this->rajaongkir_destination_id ? (int) $this->rajaongkir_destination_id : null,
+            'biteship_area_id' => $this->biteship_area_id,
             'is_default' => (bool) $this->is_default,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

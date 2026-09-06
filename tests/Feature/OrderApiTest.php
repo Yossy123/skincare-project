@@ -16,41 +16,49 @@ class OrderApiTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Set up mock for RajaOngkir API calls in order tests.
+     * Set up mock for Biteship API calls in order tests.
      */
     protected function setUp(): void
     {
         parent::setUp();
 
         Http::fake([
-            'rajaongkir.komerce.id/api/v1/calculate/domestic-cost' => Http::response([
-                'meta' => [
-                    'message' => 'Success Calculate Domestic Shipping cost',
-                    'code' => 200,
-                    'status' => 'success',
-                ],
-                'data' => [
+            'api.biteship.com/v1/rates/couriers*' => Http::response([
+                'success' => true,
+                'message' => 'Success get rates',
+                'object' => 'rates',
+                'pricing' => [
                     [
-                        'name' => 'Jalur Nugraha Ekakurir (JNE)',
-                        'code' => 'jne',
-                        'service' => 'REG',
+                        'company' => 'jne',
+                        'courier_name' => 'Jalur Nugraha Ekakurir (JNE)',
+                        'courier_code' => 'jne',
+                        'courier_service_name' => 'Reguler',
+                        'courier_service_code' => 'reg',
                         'description' => 'Layanan Reguler',
-                        'cost' => 24000,
-                        'etd' => '2-3 day',
+                        'price' => 24000,
+                        'duration' => '2 - 3 days',
                     ],
                     [
-                        'name' => 'POS Indonesia',
-                        'code' => 'pos',
-                        'service' => 'REG',
+                        'company' => 'pos',
+                        'courier_name' => 'POS Indonesia',
+                        'courier_code' => 'pos',
+                        'courier_service_name' => 'Pos Reguler',
+                        'courier_service_code' => 'reg',
                         'description' => 'Pos Reguler',
-                        'cost' => 9000,
-                        'etd' => '2-3 day',
+                        'price' => 9000,
+                        'duration' => '2 - 3 days',
                     ],
                 ],
             ], 200),
-            'rajaongkir.komerce.id/api/v1/destination/domestic-destination*' => Http::response([
-                'meta' => ['code' => 200, 'status' => 'success'],
-                'data' => [['id' => 17547, 'label' => 'Jakarta Selatan']],
+            'api.biteship.com/v1/maps/areas*' => Http::response([
+                'success' => true,
+                'areas' => [
+                    [
+                        'id' => 'IDNP6IDNC417IDND2093IDNZ12220',
+                        'name' => 'Jakarta Selatan',
+                        'postal_code' => 12220,
+                    ],
+                ],
             ], 200),
         ]);
     }
@@ -68,6 +76,7 @@ class OrderApiTest extends TestCase
             'name' => 'Elena Rostova',
             'phone' => '+628123456789',
             'city' => 'Jakarta Selatan',
+            'postal_code' => '12220',
             'is_default' => true,
         ]);
 
@@ -139,7 +148,10 @@ class OrderApiTest extends TestCase
         $user = User::factory()->create();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $address = Address::factory()->create(['user_id' => $user->id]);
+        $address = Address::factory()->create([
+            'user_id' => $user->id,
+            'postal_code' => '12220',
+        ]);
         $product = Product::factory()->create([
             'name' => 'Scarce Elixir',
             'price' => 500000,
@@ -178,7 +190,10 @@ class OrderApiTest extends TestCase
         $user = User::factory()->create();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $address = Address::factory()->create(['user_id' => $user->id]);
+        $address = Address::factory()->create([
+            'user_id' => $user->id,
+            'postal_code' => '12220',
+        ]);
         $product = Product::factory()->create([
             'price' => 400000,
             'stock' => 10,
@@ -221,7 +236,10 @@ class OrderApiTest extends TestCase
         $user = User::factory()->create();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $address = Address::factory()->create(['user_id' => $user->id]);
+        $address = Address::factory()->create([
+            'user_id' => $user->id,
+            'postal_code' => '12220',
+        ]);
         $product = Product::factory()->create([
             'name' => 'Original Serum Formula',
             'price' => 300000,
@@ -272,18 +290,24 @@ class OrderApiTest extends TestCase
         $response->assertStatus(403);
     }
 
+    /**
+     * Test courier mismatch: Selected courier (SICEPAT) cannot use another courier's (JNE) REG rate.
+     */
     public function test_order_rejects_rate_from_another_courier_with_same_service(): void
     {
         $user = User::factory()->create();
         $token = $user->createToken('auth_token')->plainTextToken;
-        $address = Address::factory()->create(['user_id' => $user->id]);
+        $address = Address::factory()->create([
+            'user_id' => $user->id,
+            'postal_code' => '12220',
+        ]);
         $product = Product::factory()->create(['stock' => 10, 'is_active' => true]);
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
             ->postJson('/api/orders', [
                 'items' => [['product_id' => $product->id, 'quantity' => 1]],
                 'address_id' => $address->id,
-                'courier' => 'SICEPAT',
+                'courier' => 'SICEPAT', // Not in mock response
                 'service' => 'REG',
             ]);
 
@@ -292,11 +316,17 @@ class OrderApiTest extends TestCase
         $this->assertDatabaseCount('orders', 0);
     }
 
+    /**
+     * Test unsupported shipping service code is rejected.
+     */
     public function test_order_rejects_unsupported_shipping_service(): void
     {
         $user = User::factory()->create();
         $token = $user->createToken('auth_token')->plainTextToken;
-        $address = Address::factory()->create(['user_id' => $user->id]);
+        $address = Address::factory()->create([
+            'user_id' => $user->id,
+            'postal_code' => '12220',
+        ]);
         $product = Product::factory()->create(['stock' => 10, 'is_active' => true]);
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")

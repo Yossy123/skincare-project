@@ -25,6 +25,9 @@ class ShippingRateRequest extends FormRequest
             'destination' => ['required'],
             'weight' => ['required', 'integer', 'min:1', 'max:30000'],
             'couriers' => ['nullable'],
+            'items' => ['nullable', 'array', 'min:1'],
+            'items.*.product_id' => ['required_with:items', 'integer', 'exists:products,id'],
+            'items.*.quantity' => ['required_with:items', 'integer', 'min:1'],
         ];
     }
 

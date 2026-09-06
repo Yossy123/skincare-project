@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ShippingController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,11 +38,14 @@ Route::post('/checkout/validate', [CheckoutController::class, 'validate'])->midd
 
 // Orders (Customer Endpoints)
 Route::apiResource('orders', OrderController::class)->only(['index', 'store', 'show'])->middleware('auth:sanctum');
+Route::post('/payments', [PaymentController::class, 'store'])->middleware('auth:sanctum');
+Route::post('/webhooks/midtrans', [PaymentController::class, 'webhook']);
 
-// Shipping & Courier Rates (RajaOngkir)
+// Shipping & Courier Rates (Biteship)
 Route::prefix('shipping')->group(function () {
     Route::post('/rates', [ShippingController::class, 'rates']);
     Route::get('/destinations', [ShippingController::class, 'destinations']);
+    Route::post('/webhook/biteship', [\App\Http\Controllers\Api\ShippingWebhookController::class, 'handleBiteship']);
 });
 
 // Categories

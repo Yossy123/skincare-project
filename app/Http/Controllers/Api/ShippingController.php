@@ -4,20 +4,21 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ShippingRateRequest;
-use App\Services\RajaOngkirService;
+use App\Models\Product;
 use App\Services\ShippingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class ShippingController extends Controller
 {
     public function __construct(
-        protected ShippingService $shippingService,
-        protected RajaOngkirService $rajaOngkirService
+        protected ShippingService $shippingService
     ) {}
 
     /**
-     * Calculate and return normalized shipping rates from supported couriers.
+     * Calculate and return normalized shipping rates from supported couriers via Biteship.
      *
      * @param ShippingRateRequest $request
      * @return JsonResponse
@@ -25,13 +26,50 @@ class ShippingController extends Controller
     public function rates(ShippingRateRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $rateItems = null;
+        $weight = (int) $validated['weight'];
 
-        $rates = $this->shippingService->getShippingRates(
-            $validated['destination'],
-            (int) $validated['weight'],
-            $validated['couriers'] ?? null,
-            $request->user()
-        );
+        if (!empty($validated['items'])) {
+            $quantities = collect($validated['items'])
+                ->groupBy('product_id')
+                ->map(fn ($items) => $items->sum('quantity'));
+            $products = Product::whereIn('id', $quantities->keys())->get()->keyBy('id');
+            $weight = 0;
+            $rateItems = [];
+
+            foreach ($quantities as $productId => $quantity) {
+                $product = $products->get($productId);
+                if (!$product || !$product->is_active) {
+                    return response()->json(['message' => 'One or more products are unavailable.'], 422);
+                }
+
+                $weight += (int) $product->weight * (int) $quantity;
+                $rateItems[] = [
+                    'name' => $product->name,
+                    'description' => $product->name,
+                    'value' => (float) $product->price,
+                    'weight' => (int) $product->weight,
+                    'quantity' => (int) $quantity,
+                ];
+            }
+        }
+
+        try {
+            $rates = $this->shippingService->getShippingRates(
+                $validated['destination'],
+                $weight,
+                $validated['couriers'] ?? null,
+                $request->user(),
+                $rateItems
+            );
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            report($e);
+            return response()->json([
+                'message' => $e->getMessage() ?: 'Shipping rates are currently unavailable. Please try again later.',
+            ], 502);
+        }
 
         return response()->json([
             'data' => $rates,
@@ -39,7 +77,7 @@ class ShippingController extends Controller
     }
 
     /**
-     * Search RajaOngkir domestic destinations by query string.
+     * Search domestic destination locations using Biteship areas API.
      *
      * @param Request $request
      * @return JsonResponse
@@ -47,7 +85,7 @@ class ShippingController extends Controller
     public function destinations(Request $request): JsonResponse
     {
         $search = (string) $request->query('search', '');
-        $destinations = $this->rajaOngkirService->searchDestinations($search);
+        $destinations = $this->shippingService->searchAreas($search);
 
         return response()->json([
             'data' => $destinations,

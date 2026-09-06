@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Shipment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class AdminOrderManagementTest extends TestCase
@@ -25,6 +26,7 @@ class AdminOrderManagementTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Queue::fake();
 
         $this->admin = User::factory()->create(['role' => 'admin']);
         $this->adminToken = $this->admin->createToken('admin_token')->plainTextToken;

@@ -27,10 +27,10 @@ class Address extends Model
         'city',
         'district',
         'postal_code',
+        'biteship_area_id',
         'address',
         'address_line',
         'address_detail',
-        'rajaongkir_destination_id',
         'is_default',
     ];
 
@@ -42,7 +42,7 @@ class Address extends Model
     protected function casts(): array
     {
         return [
-            'rajaongkir_destination_id' => 'integer',
+            'biteship_area_id' => 'string',
             'is_default' => 'boolean',
         ];
     }

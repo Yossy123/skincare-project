@@ -212,9 +212,9 @@ class AdminAdvancedOperationsTest extends TestCase
     }
 
     /**
-     * 5. Shipment sync updates active shipped orders.
+     * 5. Shipment sync must not infer delivery without courier verification.
      */
-    public function test_shipment_sync_updates_active_shipments(): void
+    public function test_shipment_sync_does_not_mark_shipments_delivered_without_verification(): void
     {
         $order = $this->createOrder('PROCESSING', 300000, 1);
         $order->status = 'SHIPPED';
@@ -233,10 +233,10 @@ class AdminAdvancedOperationsTest extends TestCase
             ->postJson('/api/admin/operations/sync-shipments');
 
         $response->assertStatus(200)
-            ->assertJsonPath('synced_count', 1);
+            ->assertJsonPath('synced_count', 0);
 
-        $this->assertEquals('DELIVERED', $order->fresh()->status);
-        $this->assertEquals('delivered', $order->fresh()->shipment->status);
+        $this->assertEquals('SHIPPED', $order->fresh()->status);
+        $this->assertEquals('shipped', $order->fresh()->shipment->status);
     }
 
     /**

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Address;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class AddressApiTest extends TestCase
@@ -37,15 +36,6 @@ class AddressApiTest extends TestCase
      */
     public function test_authenticated_user_can_create_address_and_first_becomes_default(): void
     {
-        Http::fake([
-            'rajaongkir.komerce.id/api/v1/destination/domestic-destination*' => Http::response([
-                'meta' => ['code' => 200, 'status' => 'success'],
-                'data' => [
-                    ['id' => 17547, 'label' => 'Jakarta Selatan'],
-                ],
-            ], 200),
-        ]);
-
         $user = User::factory()->create();
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -69,14 +59,14 @@ class AddressApiTest extends TestCase
             ->assertJsonPath('data.label', 'Apartment')
             ->assertJsonPath('data.recipient_name', 'Seraphina Claire')
             ->assertJsonPath('data.address_detail', 'Tower A Suite 14B')
-            ->assertJsonPath('data.rajaongkir_destination_id', 17547)
+            ->assertJsonPath('data.postal_code', '12110')
             ->assertJsonPath('data.is_default', true);
 
         $this->assertDatabaseHas('addresses', [
             'user_id' => $user->id,
             'label' => 'Apartment',
             'recipient_name' => 'Seraphina Claire',
-            'rajaongkir_destination_id' => 17547,
+            'postal_code' => '12110',
             'is_default' => true,
         ]);
     }
@@ -86,15 +76,6 @@ class AddressApiTest extends TestCase
      */
     public function test_creating_new_default_address_unsets_previous_default(): void
     {
-        Http::fake([
-            'rajaongkir.komerce.id/api/v1/destination/domestic-destination*' => Http::response([
-                'meta' => ['code' => 200, 'status' => 'success'],
-                'data' => [
-                    ['id' => 17500, 'label' => 'Jakarta Pusat'],
-                ],
-            ], 200),
-        ]);
-
         $user = User::factory()->create();
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -129,21 +110,13 @@ class AddressApiTest extends TestCase
      */
     public function test_authenticated_user_can_update_address(): void
     {
-        Http::fake([
-            'rajaongkir.komerce.id/api/v1/destination/domestic-destination*' => Http::response([
-                'meta' => ['code' => 200, 'status' => 'success'],
-                'data' => [
-                    ['id' => 2200, 'label' => 'Bandung'],
-                ],
-            ], 200),
-        ]);
-
         $user = User::factory()->create();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         $address = Address::factory()->create([
             'user_id' => $user->id,
             'city' => 'Old City',
+            'postal_code' => '12220',
         ]);
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
@@ -163,9 +136,11 @@ class AddressApiTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('data.city', 'Bandung')
             ->assertJsonPath('data.label', 'Villa')
+            ->assertJsonPath('data.postal_code', '40132')
             ->assertJsonPath('data.address_detail', 'Near ITB Gate');
 
         $this->assertEquals('Bandung', $address->fresh()->city);
+        $this->assertEquals('40132', $address->fresh()->postal_code);
         $this->assertEquals('Villa', $address->fresh()->label);
     }
 

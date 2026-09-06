@@ -2,29 +2,46 @@
 
 namespace App\Services;
 
+use App\Contracts\ShippingProviderInterface;
 use App\Models\Address;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class ShippingService
 {
     public function __construct(
-        protected RajaOngkirService $rajaOngkirService
+        protected ShippingProviderInterface $shippingProvider
     ) {}
 
     /**
-     * Calculate and aggregate normalized shipping rates from supported couriers.
+     * Calculate and aggregate normalized shipping rates from supported couriers via Biteship.
      *
-     * @param mixed $destination (Destination ID, Address ID, Address model, or string location)
-     * @param int $weightInGrams (Package weight in grams)
-     * @param mixed $couriers (Couriers to query, e.g. 'jne:sicepat:jnt:tiki:pos')
+     * @param mixed $destination (Address ID, Address model, postal code, or area identifier)
+     * @param int $weightInGrams (Authoritative package weight in grams)
+     * @param mixed $couriers (Couriers to query, e.g. 'jne,sicepat,jnt,tiki,pos')
      * @param User|null $user (Optional authenticated user for address ownership validation)
-     * @return array<int, array{courier: string, courier_name: string, service: string, description: string, price: float, formatted_price: string, etd: string, formatted_etd: string}>
+     * @param array<int, array<string, mixed>>|null $items (Optional items list with weights/values)
+     * @return array<int, array{
+     *     courier: string,
+     *     courier_name: string,
+     *     service: string,
+     *     description: string,
+     *     price: float,
+     *     formatted_price: string,
+     *     etd: string,
+     *     formatted_etd: string
+     * }>
      *
      * @throws ValidationException
      */
-    public function getShippingRates(mixed $destination, int $weightInGrams, mixed $couriers = null, ?User $user = null): array
-    {
+    public function getShippingRates(
+        mixed $destination,
+        int $weightInGrams,
+        mixed $couriers = null,
+        ?User $user = null,
+        ?array $items = null
+    ): array {
         if ($weightInGrams <= 0) {
             throw ValidationException::withMessages([
                 'weight' => ['Package weight must be at least 1 gram.'],
@@ -37,29 +54,69 @@ class ShippingService
             ]);
         }
 
-        $destinationId = $this->resolveDestinationId($destination, $user);
-        $originId = $this->rajaOngkirService->getOriginId();
+        $destParams = $this->resolveDestinationParams($destination, $user);
 
-        $rates = $this->rajaOngkirService->calculateDomesticCost(
-            $originId,
-            $destinationId,
-            $weightInGrams,
-            $couriers ?? 'jne:sicepat:jnt:tiki:pos'
+        $destKey = !empty($destParams['destination_postal_code'])
+            ? (string) $destParams['destination_postal_code']
+            : (string) ($destParams['destination_area_id'] ?? serialize($destParams));
+
+        $courierStr = is_array($couriers) ? implode(',', $couriers) : (string) ($couriers ?? 'all');
+        $normalizedItems = $items ?? [];
+        usort($normalizedItems, fn (array $a, array $b): int =>
+            ((int) ($a['product_id'] ?? 0)) <=> ((int) ($b['product_id'] ?? 0))
         );
+        $cacheInputs = [
+            'origin' => $this->shippingProvider instanceof \App\Services\BiteshipService
+                ? $this->shippingProvider->getOriginAreaId()
+                : null,
+            'destination' => $destParams,
+            'weight' => $weightInGrams,
+            'couriers' => array_values(array_filter(array_map('strtolower', is_array($couriers) ? $couriers : explode(',', (string) $couriers)))),
+            'items' => $normalizedItems,
+        ];
+        $cacheKey = 'shipping_rates_biteship_' . hash('sha256', json_encode($cacheInputs, JSON_THROW_ON_ERROR));
 
-        return $rates;
+        return Cache::remember($cacheKey, 600, function () use ($destParams, $weightInGrams, $couriers, $items) {
+            $rates = $this->shippingProvider->getRates(array_merge($destParams, [
+                'weight_in_grams' => $weightInGrams,
+                'couriers' => $couriers,
+                'items' => $items,
+            ]));
+
+            return $rates;
+        });
     }
 
     /**
-     * Resolve destination parameter to a valid RajaOngkir domestic destination ID.
+     * Search Biteship destination area locations.
+     *
+     * @param string $search
+     * @return array<int, array{
+     *     id: string|int,
+     *     label: string,
+     *     province_name: string,
+     *     city_name: string,
+     *     district_name: string,
+     *     subdistrict_name: string,
+     *     zip_code: string
+     * }>
+     */
+    public function searchAreas(string $search): array
+    {
+        return $this->shippingProvider->searchAreas($search);
+    }
+
+    /**
+     * Resolve destination parameter to Biteship destination parameters.
+     * STRICT: Never falls back silently to default cities like Jakarta Selatan.
      *
      * @param mixed $destination
      * @param User|null $user
-     * @return int
+     * @return array{destination_postal_code?: int, destination_area_id?: string}
      *
      * @throws ValidationException
      */
-    public function resolveDestinationId(mixed $destination, ?User $user = null): int
+    public function resolveDestinationParams(mixed $destination, ?User $user = null): array
     {
         if (empty($destination)) {
             throw ValidationException::withMessages([
@@ -69,19 +126,14 @@ class ShippingService
 
         // 1. If an Address instance was passed
         if ($destination instanceof Address) {
-            if ($destination->rajaongkir_destination_id) {
-                return (int) $destination->rajaongkir_destination_id;
-            }
-            return $this->resolveFromAddressString(
-                "{$destination->district}, {$destination->city}, {$destination->province}, {$destination->postal_code}"
-            );
+            return $this->extractParamsFromAddress($destination);
         }
 
-        // 2. If an integer destination ID or address ID
+        // 2. If an integer ID or numeric string
         if (is_numeric($destination)) {
             $num = (int) $destination;
 
-            // If it matches an address in database
+            // Check if it's an Address ID belonging to the user
             $query = Address::where('id', $num);
             if ($user) {
                 $query->where('user_id', $user->id);
@@ -89,46 +141,87 @@ class ShippingService
             $address = $query->first();
 
             if ($address) {
-                if ($address->rajaongkir_destination_id) {
-                    return (int) $address->rajaongkir_destination_id;
-                }
-                return $this->resolveFromAddressString(
-                    "{$address->district}, {$address->city}, {$address->province}, {$address->postal_code}"
-                );
+                return $this->extractParamsFromAddress($address);
             }
 
-            // Direct destination ID
-            if ($num > 0) {
-                return $num;
+            // Check if it's a 5-digit Indonesian postal code (e.g. 10110 - 99999)
+            if ($num >= 10000 && $num <= 99999) {
+                return ['destination_postal_code' => $num];
             }
         }
 
-        // 3. If a string location query
+        // 3. If a string destination
         if (is_string($destination)) {
-            return $this->resolveFromAddressString($destination);
+            $trimmed = trim($destination);
+
+            // If it matches Biteship area ID format (e.g. starts with IDNP...)
+            if (str_starts_with($trimmed, 'IDN')) {
+                return ['destination_area_id' => $trimmed];
+            }
+
+            // If it's a 5-digit postal code in string form
+            if (preg_match('/^\d{5}$/', $trimmed)) {
+                return ['destination_postal_code' => (int) $trimmed];
+            }
+
+            // Search Biteship areas to resolve location string
+            $areas = $this->shippingProvider->searchAreas($trimmed);
+            if (!empty($areas) && isset($areas[0]['zip_code']) && !empty($areas[0]['zip_code'])) {
+                return [
+                    'destination_postal_code' => (int) $areas[0]['zip_code'],
+                    'destination_area_id' => (string) ($areas[0]['id'] ?? ''),
+                ];
+            }
         }
 
         throw ValidationException::withMessages([
-            'destination' => ['Unable to resolve the shipping destination. Please verify the address and try again.'],
+            'destination' => ['Unable to resolve the shipping destination. Please verify the address and postal code and try again.'],
         ]);
     }
 
     /**
-     * Search RajaOngkir destination API for matching location string.
+     * Extract destination parameters from Address model.
      *
-     * @param string $location
-     * @return int
+     * @param Address $address
+     * @return array{destination_postal_code?: int, destination_area_id?: string}
+     *
+     * @throws ValidationException
      */
-    protected function resolveFromAddressString(string $location): int
+    protected function extractParamsFromAddress(Address $address): array
     {
-        $destinations = $this->rajaOngkirService->searchDestinations($location);
+        $postalCode = trim((string) $address->postal_code);
 
-        if (!empty($destinations) && isset($destinations[0]['id'])) {
-            return (int) $destinations[0]['id'];
+        if (!empty($address->biteship_area_id)) {
+            return [
+                'destination_area_id' => (string) $address->biteship_area_id,
+                'destination_postal_code' => preg_match('/^\d{5}$/', $postalCode) ? (int) $postalCode : null,
+            ];
+        }
+
+        if (preg_match('/^\d{5}$/', $postalCode)) {
+            return ['destination_postal_code' => (int) $postalCode];
+        }
+
+        // If postal code is missing or irregular, try location search
+        $location = trim("{$address->district} {$address->city} {$address->province}");
+        if (!empty($location)) {
+            $areas = $this->shippingProvider->searchAreas($location);
+            if (!empty($areas)) {
+                $first = $areas[0];
+                if (!empty($first['zip_code'])) {
+                    return [
+                        'destination_postal_code' => (int) $first['zip_code'],
+                        'destination_area_id' => (string) ($first['id'] ?? ''),
+                    ];
+                }
+                if (!empty($first['id'])) {
+                    return ['destination_area_id' => (string) $first['id']];
+                }
+            }
         }
 
         throw ValidationException::withMessages([
-            'destination' => ['Unable to resolve the shipping destination. Please verify the address and try again.'],
+            'destination' => ['Unable to resolve shipping rates for this address. Please ensure a valid 5-digit postal code is set.'],
         ]);
     }
 }

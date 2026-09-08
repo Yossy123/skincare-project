@@ -14,8 +14,6 @@ class OrderAnalyticsService
     /**
      * Get aggregated order analytics including status distribution and recent orders.
      *
-     * @param string $period
-     * @param int $recentLimit
      * @return array<string, mixed>
      */
     public function getOrderAnalytics(string $period = '30d', int $recentLimit = 10): array
@@ -55,7 +53,7 @@ class OrderAnalyticsService
                 'count' => $count,
                 'percentage' => $pct,
                 'total_amount' => $amount,
-                'formatted_amount' => 'Rp ' . number_format($amount, 0, ',', '.'),
+                'formatted_amount' => 'Rp '.number_format($amount, 0, ',', '.'),
             ];
         }
 
@@ -67,7 +65,7 @@ class OrderAnalyticsService
             ->map(function ($order) {
                 return [
                     'id' => $order->id,
-                    'order_number' => '#' . str_pad((string) $order->id, 5, '0', STR_PAD_LEFT),
+                    'order_number' => '#'.str_pad((string) $order->id, 5, '0', STR_PAD_LEFT),
                     'customer' => [
                         'name' => $order->user?->name ?? 'Guest / Deleted',
                         'email' => $order->user?->email ?? '-',
@@ -75,7 +73,7 @@ class OrderAnalyticsService
                     'created_at' => $order->created_at?->toIso8601String(),
                     'formatted_date' => $order->created_at?->setTimezone('Asia/Jakarta')->translatedFormat('d M Y, H:i'),
                     'total' => (float) $order->total,
-                    'formatted_total' => 'Rp ' . number_format((float) $order->total, 0, ',', '.'),
+                    'formatted_total' => 'Rp '.number_format((float) $order->total, 0, ',', '.'),
                     'order_status' => strtoupper($order->status),
                     'payment_status' => strtoupper($order->payment?->status ?? 'PENDING'),
                     'courier' => $order->shipping_courier,

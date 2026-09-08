@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Services\BiteshipService;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -129,7 +128,7 @@ class ShippingApiTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/shipping/rates', [
-            'destination' => 'invalid-nonexistent-location-' . uniqid(),
+            'destination' => 'invalid-nonexistent-location-'.uniqid(),
             'weight' => 500,
             'couriers' => 'jne',
         ]);
@@ -197,7 +196,7 @@ class ShippingApiTest extends TestCase
 
         $response->assertStatus(200);
         $content = $response->getContent();
-        if (!empty($apiKey)) {
+        if (! empty($apiKey)) {
             $this->assertStringNotContainsString($apiKey, $content);
         }
     }

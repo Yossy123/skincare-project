@@ -39,7 +39,7 @@ class AdminDashboardService
         $todayOrders = Order::whereBetween('created_at', [$todayStart, $todayEnd])->count();
 
         // 3. Operational Indicators
-        $pendingPaymentsCount = Order::whereIn('status', ['pending_payment', 'PENDING_PAYMENT'])->count();
+        $pendingPaymentsCount = Order::where('status', 'PENDING_PAYMENT')->count();
         $lowStockCount = Product::where('is_active', true)->where('stock', '<=', 5)->count();
 
         // 4. Quick 7-day Sales Sparkline & Status Distribution
@@ -51,7 +51,7 @@ class AdminDashboardService
             'kpis' => [
                 'total_revenue' => [
                     'value' => $lifetimeRevenue,
-                    'formatted' => 'Rp ' . number_format($lifetimeRevenue, 0, ',', '.'),
+                    'formatted' => 'Rp '.number_format($lifetimeRevenue, 0, ',', '.'),
                     'label' => 'Total Lifetime Revenue',
                 ],
                 'total_orders' => [
@@ -71,7 +71,7 @@ class AdminDashboardService
                 ],
                 'today_revenue' => [
                     'value' => $todayRevenue,
-                    'formatted' => 'Rp ' . number_format($todayRevenue, 0, ',', '.'),
+                    'formatted' => 'Rp '.number_format($todayRevenue, 0, ',', '.'),
                     'label' => "Today's Revenue",
                 ],
                 'today_orders' => [

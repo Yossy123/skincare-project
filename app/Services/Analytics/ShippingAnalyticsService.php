@@ -14,7 +14,6 @@ class ShippingAnalyticsService
     /**
      * Get aggregated shipping and courier usage analytics.
      *
-     * @param string $period
      * @return array<string, mixed>
      */
     public function getShippingAnalytics(string $period = '30d'): array
@@ -50,12 +49,13 @@ class ShippingAnalyticsService
                 $count = (int) $item->orders_count;
                 $cost = (float) $item->total_cost;
                 $percentage = $totalOrders > 0 ? round(($count / $totalOrders) * 100, 1) : 0.0;
+
                 return [
                     'courier' => strtoupper($item->shipping_courier ?: 'UNKNOWN'),
                     'orders_count' => $count,
                     'percentage' => $percentage,
                     'total_cost' => $cost,
-                    'formatted_total_cost' => 'Rp ' . number_format($cost, 0, ',', '.'),
+                    'formatted_total_cost' => 'Rp '.number_format($cost, 0, ',', '.'),
                 ];
             });
 
@@ -74,12 +74,13 @@ class ShippingAnalyticsService
             ->get()
             ->map(function ($item) {
                 $cost = (float) $item->total_cost;
+
                 return [
                     'courier' => strtoupper($item->shipping_courier ?: 'UNKNOWN'),
                     'service' => strtoupper($item->shipping_service ?: 'STANDARD'),
                     'orders_count' => (int) $item->orders_count,
                     'total_cost' => $cost,
-                    'formatted_total_cost' => 'Rp ' . number_format($cost, 0, ',', '.'),
+                    'formatted_total_cost' => 'Rp '.number_format($cost, 0, ',', '.'),
                 ];
             });
 
@@ -89,11 +90,13 @@ class ShippingAnalyticsService
             ->get()
             ->groupBy(function ($order) {
                 $address = $order->shipping_address;
+
                 return $address['province'] ?? $address['city'] ?? 'Other';
             })
             ->map(function ($group, $region) use ($totalOrders) {
                 $count = $group->count();
                 $percentage = $totalOrders > 0 ? round(($count / $totalOrders) * 100, 1) : 0.0;
+
                 return [
                     'region' => $region,
                     'orders_count' => $count,
@@ -109,9 +112,9 @@ class ShippingAnalyticsService
             'summary' => [
                 'total_shipped_orders' => $totalOrders,
                 'total_shipping_cost' => $totalCost,
-                'formatted_total_shipping_cost' => 'Rp ' . number_format($totalCost, 0, ',', '.'),
+                'formatted_total_shipping_cost' => 'Rp '.number_format($totalCost, 0, ',', '.'),
                 'average_shipping_cost' => round($avgCost, 2),
-                'formatted_average_shipping_cost' => 'Rp ' . number_format(round($avgCost, 2), 0, ',', '.'),
+                'formatted_average_shipping_cost' => 'Rp '.number_format(round($avgCost, 2), 0, ',', '.'),
             ],
             'courier_usage' => $courierUsage,
             'service_usage' => $serviceUsage,

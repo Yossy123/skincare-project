@@ -16,8 +16,6 @@ class CategoryController extends Controller
 {
     /**
      * List all active categories with product counts.
-     *
-     * @return AnonymousResourceCollection
      */
     public function index(): AnonymousResourceCollection
     {
@@ -34,9 +32,6 @@ class CategoryController extends Controller
 
     /**
      * Get a single category by slug.
-     *
-     * @param string $slug
-     * @return JsonResponse|CategoryResource
      */
     public function show(string $slug): JsonResponse|CategoryResource
     {
@@ -48,7 +43,7 @@ class CategoryController extends Controller
             }])
             ->first();
 
-        if (!$category) {
+        if (! $category) {
             return response()->json([
                 'message' => 'Category not found.',
             ], 404);
@@ -59,11 +54,6 @@ class CategoryController extends Controller
 
     /**
      * List products belonging to a specific category slug.
-     *
-     * @param ProductFilterRequest $request
-     * @param string $slug
-     * @param ProductQueryFilter $filter
-     * @return JsonResponse|AnonymousResourceCollection
      */
     public function products(ProductFilterRequest $request, string $slug, ProductQueryFilter $filter): JsonResponse|AnonymousResourceCollection
     {
@@ -72,7 +62,7 @@ class CategoryController extends Controller
             ->where('is_active', true)
             ->first();
 
-        if (!$category) {
+        if (! $category) {
             return response()->json([
                 'message' => 'Category not found.',
             ], 404);

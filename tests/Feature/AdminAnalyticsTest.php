@@ -16,6 +16,7 @@ class AdminAnalyticsTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected string $adminToken;
 
     protected function setUp(): void

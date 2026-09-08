@@ -17,12 +17,48 @@ class MidtransPaymentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Config::set('services.midtrans.enabled', true);
         Config::set('services.midtrans.server_key', 'test-server-key');
         Config::set('services.midtrans.snap_base_url', 'https://app.sandbox.midtrans.com');
     }
 
+    public function test_payment_creation_is_rejected_with_503_when_midtrans_disabled(): void
+    {
+        Config::set('services.midtrans.enabled', false);
+        Http::fake();
+
+        $user = User::factory()->create();
+        $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'PENDING_PAYMENT', 'total' => 125000]);
+
+        $response = $this->actingAs($user)->postJson('/api/payments', ['order_id' => $order->id]);
+
+        $response->assertStatus(503)
+            ->assertJsonPath('message', 'Payment via Midtrans sementara tidak tersedia.');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_webhook_is_rejected_with_503_when_midtrans_disabled(): void
+    {
+        Config::set('services.midtrans.enabled', false);
+
+        $user = User::factory()->create();
+        $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'PENDING_PAYMENT', 'total' => 125000]);
+        Payment::factory()->create(['order_id' => $order->id, 'status' => 'pending', 'amount' => 125000]);
+        $notification = $this->notification($order, 'settlement');
+
+        $response = $this->postJson('/api/webhooks/midtrans', $notification);
+
+        $response->assertStatus(503)
+            ->assertJsonPath('message', 'Payment via Midtrans sementara tidak tersedia.');
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'PENDING_PAYMENT']);
+        $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'status' => 'pending']);
+    }
+
     public function test_owner_can_create_snap_payment_using_server_total(): void
     {
+        Config::set('services.midtrans.enabled', true);
         Http::fake(['app.sandbox.midtrans.com/*' => Http::response([
             'token' => 'snap-token-123',
             'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v2/vtweb/snap-token-123',
@@ -40,6 +76,7 @@ class MidtransPaymentTest extends TestCase
 
     public function test_valid_notification_marks_payment_paid_and_is_idempotent(): void
     {
+        Config::set('services.midtrans.enabled', true);
         $user = User::factory()->create();
         $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'PENDING_PAYMENT', 'total' => 125000]);
         Payment::factory()->create(['order_id' => $order->id, 'status' => 'pending', 'amount' => 125000]);
@@ -54,6 +91,7 @@ class MidtransPaymentTest extends TestCase
 
     public function test_invalid_signature_or_amount_is_rejected(): void
     {
+        Config::set('services.midtrans.enabled', true);
         $order = Order::factory()->create(['status' => 'PENDING_PAYMENT', 'total' => 125000]);
         Payment::factory()->create(['order_id' => $order->id, 'status' => 'pending', 'amount' => 125000]);
 
@@ -72,6 +110,7 @@ class MidtransPaymentTest extends TestCase
     {
         $orderId = 'ORDER-'.$order->id;
         $statusCode = '200';
+
         return [
             'order_id' => $orderId,
             'status_code' => $statusCode,

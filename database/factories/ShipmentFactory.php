@@ -25,7 +25,7 @@ class ShipmentFactory extends Factory
             'order_id' => Order::factory(),
             'courier' => 'JNE',
             'service' => 'REG',
-            'tracking_number' => 'JNE' . Str::upper(Str::random(12)),
+            'tracking_number' => 'JNE'.Str::upper(Str::random(12)),
             'status' => 'pending',
             'shipped_at' => null,
             'delivered_at' => null,

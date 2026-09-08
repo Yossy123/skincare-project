@@ -14,10 +14,6 @@ class ProductController extends Controller
 {
     /**
      * List paginated active products with optional search, category, and sorting filters.
-     *
-     * @param ProductFilterRequest $request
-     * @param ProductQueryFilter $filter
-     * @return AnonymousResourceCollection
      */
     public function index(ProductFilterRequest $request, ProductQueryFilter $filter): AnonymousResourceCollection
     {
@@ -32,9 +28,6 @@ class ProductController extends Controller
 
     /**
      * Show a single product by slug. Returns 404 if inactive or not found.
-     *
-     * @param string $slug
-     * @return JsonResponse|ProductResource
      */
     public function show(string $slug): JsonResponse|ProductResource
     {
@@ -44,7 +37,7 @@ class ProductController extends Controller
             ->with('category')
             ->first();
 
-        if (!$product) {
+        if (! $product) {
             return response()->json([
                 'message' => 'Product not found.',
             ], 404);

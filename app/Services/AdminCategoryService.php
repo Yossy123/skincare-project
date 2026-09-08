@@ -24,12 +24,11 @@ class AdminCategoryService
     /**
      * Create a new category.
      *
-     * @param array<string, mixed> $data
-     * @return Category
+     * @param  array<string, mixed>  $data
      */
     public function createCategory(array $data): Category
     {
-        $slug = !empty($data['slug']) ? Str::slug($data['slug']) : Str::slug($data['name']);
+        $slug = ! empty($data['slug']) ? Str::slug($data['slug']) : Str::slug($data['name']);
         $slug = $this->ensureUniqueSlug($slug);
 
         return Category::create([
@@ -43,9 +42,7 @@ class AdminCategoryService
     /**
      * Update an existing category.
      *
-     * @param Category $category
-     * @param array<string, mixed> $data
-     * @return Category
+     * @param  array<string, mixed>  $data
      */
     public function updateCategory(Category $category, array $data): Category
     {
@@ -69,27 +66,24 @@ class AdminCategoryService
         }
 
         $category->update($payload);
+
         return $category->fresh()->loadCount('products');
     }
 
     /**
      * Toggle category activation.
-     *
-     * @param Category $category
-     * @return Category
      */
     public function toggleActivation(Category $category): Category
     {
-        $category->is_active = !$category->is_active;
+        $category->is_active = ! $category->is_active;
         $category->save();
+
         return $category->fresh()->loadCount('products');
     }
 
     /**
      * Delete a category if it has no associated products.
      *
-     * @param Category $category
-     * @return bool
      *
      * @throws ValidationException
      */
@@ -99,7 +93,10 @@ class AdminCategoryService
 
         if ($productsCount > 0) {
             throw ValidationException::withMessages([
-                'category' => ["Cannot delete category '{$category->name}' because it still contains {$productsCount} products. Please reassign or delete the products first, or deactivate the category instead."],
+                'category' => [
+                    "Cannot delete category '{$category->name}' because it still contains {$productsCount} products. ".
+                    'Please reassign or delete the products first, or deactivate the category instead.',
+                ],
             ]);
         }
 
@@ -120,7 +117,7 @@ class AdminCategoryService
                 $query->where('id', '!=', $ignoreId);
             }
 
-            if (!$query->exists()) {
+            if (! $query->exists()) {
                 return $slug;
             }
 

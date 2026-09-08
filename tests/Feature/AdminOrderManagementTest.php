@@ -18,9 +18,13 @@ class AdminOrderManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected string $adminToken;
+
     protected User $customer;
+
     protected string $customerToken;
+
     protected Product $product;
 
     protected function setUp(): void
@@ -89,7 +93,7 @@ class AdminOrderManagementTest extends TestCase
         Payment::create([
             'order_id' => $order->id,
             'provider' => 'midtrans',
-            'transaction_id' => 'TRX-' . $order->id,
+            'transaction_id' => 'TRX-'.$order->id,
             'status' => $status === 'PAID' ? 'settlement' : 'pending',
             'amount' => $total,
         ]);

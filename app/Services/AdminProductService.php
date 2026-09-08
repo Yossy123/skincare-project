@@ -15,16 +15,14 @@ class AdminProductService
     /**
      * List products with filtering, search, and pagination for back office.
      *
-     * @param array<string, mixed> $filters
-     * @param int $perPage
-     * @return LengthAwarePaginator
+     * @param  array<string, mixed>  $filters
      */
     public function listProducts(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = Product::query()->with('category:id,name,slug');
 
         // Search by name, slug, or description
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = trim((string) $filters['search']);
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'ilike', "%{$search}%")
@@ -34,7 +32,7 @@ class AdminProductService
         }
 
         // Filter by Category
-        if (!empty($filters['category_id'])) {
+        if (! empty($filters['category_id'])) {
             $query->where('category_id', (int) $filters['category_id']);
         }
 
@@ -47,7 +45,7 @@ class AdminProductService
         }
 
         // Filter by Stock Status
-        if (!empty($filters['stock_status'])) {
+        if (! empty($filters['stock_status'])) {
             $stockStatus = strtolower(trim((string) $filters['stock_status']));
             if ($stockStatus === 'in_stock') {
                 $query->where('stock', '>', 5);
@@ -65,14 +63,12 @@ class AdminProductService
     /**
      * Create a new product.
      *
-     * @param array<string, mixed> $data
-     * @param UploadedFile|null $imageFile
-     * @return Product
+     * @param  array<string, mixed>  $data
      */
     public function createProduct(array $data, ?UploadedFile $imageFile = null): Product
     {
         // Generate or sanitize slug
-        $slug = !empty($data['slug']) ? Str::slug($data['slug']) : Str::slug($data['name']);
+        $slug = ! empty($data['slug']) ? Str::slug($data['slug']) : Str::slug($data['name']);
         $slug = $this->ensureUniqueSlug($slug);
 
         $imagePath = $data['image'] ?? null;
@@ -97,10 +93,7 @@ class AdminProductService
      * Update an existing product master record.
      * Historical order items remain untouched and immutable.
      *
-     * @param Product $product
-     * @param array<string, mixed> $data
-     * @param UploadedFile|null $imageFile
-     * @return Product
+     * @param  array<string, mixed>  $data
      */
     public function updateProduct(Product $product, array $data, ?UploadedFile $imageFile = null): Product
     {
@@ -150,30 +143,25 @@ class AdminProductService
         }
 
         $product->update($payload);
+
         return $product->fresh('category');
     }
 
     /**
      * Toggle product activation status (soft activation/deactivation).
-     *
-     * @param Product $product
-     * @return Product
      */
     public function toggleActivation(Product $product): Product
     {
-        $product->is_active = !$product->is_active;
+        $product->is_active = ! $product->is_active;
         $product->save();
+
         return $product->fresh('category');
     }
 
     /**
      * Controlled inventory stock adjustment with row locking and negative prevention.
      *
-     * @param int $productId
-     * @param string $type 'set'|'increment'|'decrement'
-     * @param int $amount
-     * @param string|null $reason
-     * @return Product
+     * @param  string  $type  'set'|'increment'|'decrement'
      *
      * @throws ValidationException
      */
@@ -238,7 +226,7 @@ class AdminProductService
                 $query->where('id', '!=', $ignoreId);
             }
 
-            if (!$query->exists()) {
+            if (! $query->exists()) {
                 return $slug;
             }
 

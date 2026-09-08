@@ -2,23 +2,17 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -28,21 +22,11 @@ class User extends Authenticatable
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -52,49 +36,43 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Determine if the user has an admin role.
-     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
-    /**
-     * Determine if the user is a customer.
-     */
+    public function isDoctor(): bool
+    {
+        return $this->role === 'doctor';
+    }
+
     public function isCustomer(): bool
     {
         return $this->role === 'customer' || empty($this->role);
     }
 
-    /**
-     * Get all shipping addresses for the user.
-     *
-     * @return HasMany<Address, $this>
-     */
     public function addresses(): HasMany
     {
         return $this->hasMany(Address::class);
     }
 
-    /**
-     * Get all orders placed by the user.
-     *
-     * @return HasMany<Order, $this>
-     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
-    /**
-     * Get customer administrative audit logs.
-     *
-     * @return HasMany<CustomerAuditLog, $this>
-     */
     public function customerAuditLogs(): HasMany
     {
         return $this->hasMany(CustomerAuditLog::class, 'customer_id')->orderByDesc('created_at');
+    }
+
+    public function doctor(): HasOne
+    {
+        return $this->hasOne(Doctor::class);
+    }
+
+    public function patient(): HasOne
+    {
+        return $this->hasOne(Patient::class);
     }
 }

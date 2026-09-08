@@ -17,11 +17,11 @@ class ShippingService
     /**
      * Calculate and aggregate normalized shipping rates from supported couriers via Biteship.
      *
-     * @param mixed $destination (Address ID, Address model, postal code, or area identifier)
-     * @param int $weightInGrams (Authoritative package weight in grams)
-     * @param mixed $couriers (Couriers to query, e.g. 'jne,sicepat,jnt,tiki,pos')
-     * @param User|null $user (Optional authenticated user for address ownership validation)
-     * @param array<int, array<string, mixed>>|null $items (Optional items list with weights/values)
+     * @param  mixed  $destination  (Address ID, Address model, postal code, or area identifier)
+     * @param  int  $weightInGrams  (Authoritative package weight in grams)
+     * @param  mixed  $couriers  (Couriers to query, e.g. 'jne,sicepat,jnt,tiki,pos')
+     * @param  User|null  $user  (Optional authenticated user for address ownership validation)
+     * @param  array<int, array<string, mixed>>|null  $items  (Optional items list with weights/values)
      * @return array<int, array{
      *     courier: string,
      *     courier_name: string,
@@ -56,17 +56,16 @@ class ShippingService
 
         $destParams = $this->resolveDestinationParams($destination, $user);
 
-        $destKey = !empty($destParams['destination_postal_code'])
+        $destKey = ! empty($destParams['destination_postal_code'])
             ? (string) $destParams['destination_postal_code']
             : (string) ($destParams['destination_area_id'] ?? serialize($destParams));
 
         $courierStr = is_array($couriers) ? implode(',', $couriers) : (string) ($couriers ?? 'all');
         $normalizedItems = $items ?? [];
-        usort($normalizedItems, fn (array $a, array $b): int =>
-            ((int) ($a['product_id'] ?? 0)) <=> ((int) ($b['product_id'] ?? 0))
+        usort($normalizedItems, fn (array $a, array $b): int => ((int) ($a['product_id'] ?? 0)) <=> ((int) ($b['product_id'] ?? 0))
         );
         $cacheInputs = [
-            'origin' => $this->shippingProvider instanceof \App\Services\BiteshipService
+            'origin' => $this->shippingProvider instanceof BiteshipService
                 ? $this->shippingProvider->getOriginAreaId()
                 : null,
             'destination' => $destParams,
@@ -74,7 +73,7 @@ class ShippingService
             'couriers' => array_values(array_filter(array_map('strtolower', is_array($couriers) ? $couriers : explode(',', (string) $couriers)))),
             'items' => $normalizedItems,
         ];
-        $cacheKey = 'shipping_rates_biteship_' . hash('sha256', json_encode($cacheInputs, JSON_THROW_ON_ERROR));
+        $cacheKey = 'shipping_rates_biteship_'.hash('sha256', json_encode($cacheInputs, JSON_THROW_ON_ERROR));
 
         return Cache::remember($cacheKey, 600, function () use ($destParams, $weightInGrams, $couriers, $items) {
             $rates = $this->shippingProvider->getRates(array_merge($destParams, [
@@ -90,7 +89,6 @@ class ShippingService
     /**
      * Search Biteship destination area locations.
      *
-     * @param string $search
      * @return array<int, array{
      *     id: string|int,
      *     label: string,
@@ -110,8 +108,6 @@ class ShippingService
      * Resolve destination parameter to Biteship destination parameters.
      * STRICT: Never falls back silently to default cities like Jakarta Selatan.
      *
-     * @param mixed $destination
-     * @param User|null $user
      * @return array{destination_postal_code?: int, destination_area_id?: string}
      *
      * @throws ValidationException
@@ -166,7 +162,7 @@ class ShippingService
 
             // Search Biteship areas to resolve location string
             $areas = $this->shippingProvider->searchAreas($trimmed);
-            if (!empty($areas) && isset($areas[0]['zip_code']) && !empty($areas[0]['zip_code'])) {
+            if (! empty($areas) && isset($areas[0]['zip_code']) && ! empty($areas[0]['zip_code'])) {
                 return [
                     'destination_postal_code' => (int) $areas[0]['zip_code'],
                     'destination_area_id' => (string) ($areas[0]['id'] ?? ''),
@@ -182,7 +178,6 @@ class ShippingService
     /**
      * Extract destination parameters from Address model.
      *
-     * @param Address $address
      * @return array{destination_postal_code?: int, destination_area_id?: string}
      *
      * @throws ValidationException
@@ -191,7 +186,7 @@ class ShippingService
     {
         $postalCode = trim((string) $address->postal_code);
 
-        if (!empty($address->biteship_area_id)) {
+        if (! empty($address->biteship_area_id)) {
             return [
                 'destination_area_id' => (string) $address->biteship_area_id,
                 'destination_postal_code' => preg_match('/^\d{5}$/', $postalCode) ? (int) $postalCode : null,
@@ -204,17 +199,17 @@ class ShippingService
 
         // If postal code is missing or irregular, try location search
         $location = trim("{$address->district} {$address->city} {$address->province}");
-        if (!empty($location)) {
+        if (! empty($location)) {
             $areas = $this->shippingProvider->searchAreas($location);
-            if (!empty($areas)) {
+            if (! empty($areas)) {
                 $first = $areas[0];
-                if (!empty($first['zip_code'])) {
+                if (! empty($first['zip_code'])) {
                     return [
                         'destination_postal_code' => (int) $first['zip_code'],
                         'destination_area_id' => (string) ($first['id'] ?? ''),
                     ];
                 }
-                if (!empty($first['id'])) {
+                if (! empty($first['id'])) {
                     return ['destination_area_id' => (string) $first['id']];
                 }
             }

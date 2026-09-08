@@ -31,7 +31,7 @@ class ProductFactory extends Factory
             'price' => fake()->randomFloat(2, 50000, 1500000),
             'weight' => fake()->numberBetween(50, 1000), // grams
             'stock' => fake()->numberBetween(10, 200),
-            'image' => 'products/' . Str::slug($name) . '.jpg',
+            'image' => 'products/'.Str::slug($name).'.jpg',
             'is_active' => true,
         ];
     }

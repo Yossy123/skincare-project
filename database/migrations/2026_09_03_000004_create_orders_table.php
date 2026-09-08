@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->string('status')->default('pending')->index();
+            $table->string('status')->default('PENDING_PAYMENT')->index();
             $table->decimal('subtotal', 12, 2);
             $table->decimal('shipping_cost', 12, 2)->default(0);
             $table->decimal('total', 12, 2);

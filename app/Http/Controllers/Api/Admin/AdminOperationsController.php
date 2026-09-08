@@ -25,6 +25,12 @@ class AdminOperationsController extends Controller
      */
     public function refund(int $id, Request $request): JsonResponse
     {
+        if (! $this->refundService->isEnabled()) {
+            return response()->json([
+                'message' => 'Payment via Midtrans sementara tidak tersedia.',
+            ], 503);
+        }
+
         $request->validate([
             'reason' => ['required', 'string', 'max:255'],
             'amount' => ['nullable', 'numeric', 'min:1'],
@@ -41,7 +47,7 @@ class AdminOperationsController extends Controller
         );
 
         return response()->json([
-            'message' => "Refund of Rp " . number_format($amount, 0, ',', '.') . " completed successfully for Order #{$order->id}.",
+            'message' => 'Refund of Rp '.number_format($amount, 0, ',', '.')." completed successfully for Order #{$order->id}.",
             'data' => $updatedOrder,
         ], 200);
     }
@@ -78,8 +84,8 @@ class AdminOperationsController extends Controller
      */
     public function alerts(): JsonResponse
     {
-        $unprocessedPaid = Order::whereIn('status', ['PAID', 'paid'])->count();
-        $stalePending = Order::whereIn('status', ['PENDING_PAYMENT', 'pending_payment'])
+        $unprocessedPaid = Order::where('status', 'PAID')->count();
+        $stalePending = Order::where('status', 'PENDING_PAYMENT')
             ->where('created_at', '<=', now()->subHours(24))
             ->count();
 

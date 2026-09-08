@@ -33,6 +33,7 @@ class AdminOrderController extends Controller
         // Format data with allowed_actions attribute
         $paginator->getCollection()->transform(function ($order) {
             $order->append('allowed_actions');
+
             return $order;
         });
 
@@ -120,7 +121,7 @@ class AdminOrderController extends Controller
     public function cancel(int $id, Request $request): JsonResponse
     {
         $request->validate([
-            'reason' => ['required', 'string', 'in:' . implode(',', AdminOrderService::VALID_CANCELLATION_REASONS)],
+            'reason' => ['required', 'string', 'in:'.implode(',', AdminOrderService::VALID_CANCELLATION_REASONS)],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 

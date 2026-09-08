@@ -35,12 +35,12 @@ class CreateBiteshipShipmentJob implements ShouldQueue
                 ->lockForUpdate()
                 ->first();
 
-            if (!$order || !in_array(strtoupper($order->status), ['PROCESSING', 'PAID'], true)) {
+            if (! $order || ! in_array(strtoupper($order->status), ['PROCESSING', 'PAID'], true)) {
                 return;
             }
 
             $shipment = $order->shipment;
-            if (!$shipment || $shipment->biteship_order_id) {
+            if (! $shipment || $shipment->biteship_order_id) {
                 return;
             }
 
@@ -56,7 +56,7 @@ class CreateBiteshipShipmentJob implements ShouldQueue
                 ])->values()->all(),
             ]);
 
-            if (!($result['success'] ?? false) || empty($result['order_id'])) {
+            if (! ($result['success'] ?? false) || empty($result['order_id'])) {
                 Log::error('Biteship shipment creation failed; payment/order state unchanged.', [
                     'order_id' => $order->id,
                     'response' => $result,

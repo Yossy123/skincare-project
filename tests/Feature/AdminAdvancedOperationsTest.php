@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Shipment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
@@ -19,14 +20,19 @@ class AdminAdvancedOperationsTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected string $adminToken;
+
     protected User $customer;
+
     protected string $customerToken;
+
     protected Product $product;
 
     protected function setUp(): void
     {
         parent::setUp();
+        Config::set('services.midtrans.enabled', true);
 
         $this->admin = User::factory()->create(['role' => 'admin']);
         $this->adminToken = $this->admin->createToken('admin_token')->plainTextToken;
@@ -77,7 +83,7 @@ class AdminAdvancedOperationsTest extends TestCase
         Payment::create([
             'order_id' => $order->id,
             'provider' => 'midtrans',
-            'transaction_id' => 'TRX-' . $order->id,
+            'transaction_id' => 'TRX-'.$order->id,
             'status' => in_array($status, ['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED']) ? 'settlement' : 'pending',
             'amount' => ($amount * $qty) + 15000,
         ]);
@@ -88,6 +94,30 @@ class AdminAdvancedOperationsTest extends TestCase
     /**
      * 1. Admin can refund a paid order, restoring stock and logging audit.
      */
+
+    /**
+     * Test refund is rejected with 503 when Midtrans is disabled.
+     */
+    public function test_refund_is_rejected_with_503_when_midtrans_disabled(): void
+    {
+        Config::set('services.midtrans.enabled', false);
+
+        $order = $this->createOrder('PAID', 300000, 2);
+
+        $response = $this->withHeader('Authorization', "Bearer {$this->adminToken}")
+            ->postJson("/api/admin/orders/{$order->id}/refund", [
+                'reason' => 'Defective product batch returned by customer',
+                'amount' => 615000,
+            ]);
+
+        $response->assertStatus(503)
+            ->assertJsonPath('message', 'Payment via Midtrans sementara tidak tersedia.');
+
+        // Order and payment status must remain unchanged
+        $this->assertEquals('PAID', $order->fresh()->status);
+        $this->assertEquals('settlement', $order->fresh()->payment->status);
+    }
+
     public function test_admin_can_refund_paid_order_and_restore_stock(): void
     {
         Queue::fake();

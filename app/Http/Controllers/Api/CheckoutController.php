@@ -9,18 +9,12 @@ use Illuminate\Http\JsonResponse;
 
 class CheckoutController extends Controller
 {
-    /**
-     * @param CheckoutService $checkoutService
-     */
     public function __construct(
         protected CheckoutService $checkoutService
     ) {}
 
     /**
      * Validate checkout items and calculate server-authoritative subtotal and weight.
-     *
-     * @param CheckoutValidateRequest $request
-     * @return JsonResponse
      */
     public function validate(CheckoutValidateRequest $request): JsonResponse
     {

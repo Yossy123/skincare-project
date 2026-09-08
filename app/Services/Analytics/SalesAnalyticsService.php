@@ -14,11 +14,6 @@ class SalesAnalyticsService
      * Excludes: PENDING_PAYMENT, CANCELLED, EXPIRED.
      */
     public const VALID_PAID_STATUSES = [
-        'paid',
-        'processing',
-        'shipped',
-        'delivered',
-        'completed',
         'PAID',
         'PROCESSING',
         'SHIPPED',
@@ -29,9 +24,9 @@ class SalesAnalyticsService
     /**
      * Get aggregated sales analytics (revenue, order counts, AOV, time series).
      *
-     * @param string $period 'today'|'7d'|'30d'|'this_month'|'last_month'|'custom'
-     * @param string|null $startDate 'YYYY-MM-DD'
-     * @param string|null $endDate 'YYYY-MM-DD'
+     * @param  string  $period  'today'|'7d'|'30d'|'this_month'|'last_month'|'custom'
+     * @param  string|null  $startDate  'YYYY-MM-DD'
+     * @param  string|null  $endDate  'YYYY-MM-DD'
      * @return array<string, mixed>
      */
     public function getSalesAnalytics(
@@ -59,7 +54,7 @@ class SalesAnalyticsService
         $dateExpr = match ($driver) {
             'pgsql' => "TO_CHAR(created_at AT TIME ZONE 'Asia/Jakarta', 'YYYY-MM-DD')",
             'sqlite' => "strftime('%Y-%m-%d', created_at)",
-            default => "DATE(created_at)",
+            default => 'DATE(created_at)',
         };
 
         $dailyRecords = Order::whereIn('status', self::VALID_PAID_STATUSES)
@@ -93,7 +88,7 @@ class SalesAnalyticsService
                 'date' => $formattedDate,
                 'label' => $dateObj->translatedFormat('d M'),
                 'revenue' => $dayRevenue,
-                'formatted_revenue' => 'Rp ' . number_format($dayRevenue, 0, ',', '.'),
+                'formatted_revenue' => 'Rp '.number_format($dayRevenue, 0, ',', '.'),
                 'orders' => $dayOrders,
             ];
         }
@@ -104,10 +99,10 @@ class SalesAnalyticsService
             'end_date' => $end->toDateString(),
             'summary' => [
                 'revenue' => $revenue,
-                'formatted_revenue' => 'Rp ' . number_format($revenue, 0, ',', '.'),
+                'formatted_revenue' => 'Rp '.number_format($revenue, 0, ',', '.'),
                 'orders' => $orderCount,
                 'average_order_value' => $aov,
-                'formatted_average_order_value' => 'Rp ' . number_format($aov, 0, ',', '.'),
+                'formatted_average_order_value' => 'Rp '.number_format($aov, 0, ',', '.'),
             ],
             'series' => $series,
         ];

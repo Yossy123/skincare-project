@@ -15,9 +15,6 @@ class ProductAnalyticsService
     /**
      * Get complete product analytics (Best sellers, Top revenue, Low stock alerts).
      *
-     * @param string $period
-     * @param int $limit
-     * @param int $lowStockThreshold
      * @return array<string, mixed>
      */
     public function getProductAnalytics(
@@ -44,12 +41,13 @@ class ProductAnalyticsService
             ->get()
             ->map(function ($item) {
                 $revenue = (float) $item->total_revenue;
+
                 return [
                     'product_id' => $item->product_id,
                     'name' => $item->product_name,
                     'units_sold' => (int) $item->units_sold,
                     'revenue' => $revenue,
-                    'formatted_revenue' => 'Rp ' . number_format($revenue, 0, ',', '.'),
+                    'formatted_revenue' => 'Rp '.number_format($revenue, 0, ',', '.'),
                 ];
             });
 
@@ -70,12 +68,13 @@ class ProductAnalyticsService
             ->get()
             ->map(function ($item) {
                 $revenue = (float) $item->total_revenue;
+
                 return [
                     'product_id' => $item->product_id,
                     'name' => $item->product_name,
                     'units_sold' => (int) $item->units_sold,
                     'revenue' => $revenue,
-                    'formatted_revenue' => 'Rp ' . number_format($revenue, 0, ',', '.'),
+                    'formatted_revenue' => 'Rp '.number_format($revenue, 0, ',', '.'),
                 ];
             });
 
@@ -92,7 +91,7 @@ class ProductAnalyticsService
                 'slug' => $p->slug,
                 'stock' => $p->stock,
                 'price' => (float) $p->price,
-                'formatted_price' => 'Rp ' . number_format((float) $p->price, 0, ',', '.'),
+                'formatted_price' => 'Rp '.number_format((float) $p->price, 0, ',', '.'),
                 'status' => 'LOW_STOCK',
             ]);
 
@@ -107,7 +106,7 @@ class ProductAnalyticsService
                 'slug' => $p->slug,
                 'stock' => $p->stock,
                 'price' => (float) $p->price,
-                'formatted_price' => 'Rp ' . number_format((float) $p->price, 0, ',', '.'),
+                'formatted_price' => 'Rp '.number_format((float) $p->price, 0, ',', '.'),
                 'status' => 'OUT_OF_STOCK',
             ]);
 

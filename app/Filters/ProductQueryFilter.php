@@ -11,9 +11,7 @@ class ProductQueryFilter
     /**
      * Apply all catalog query filters to the Product query builder.
      *
-     * @param Builder<Product> $query
-     * @param Request $request
-     * @param string|null $categorySlug
+     * @param  Builder<Product>  $query
      * @return Builder<Product>
      */
     public function apply(Builder $query, Request $request, ?string $categorySlug = null): Builder
@@ -26,7 +24,7 @@ class ProductQueryFilter
 
         // Category filter (either from route param or query param)
         $category = $categorySlug ?? $request->query('category');
-        if (!empty($category)) {
+        if (! empty($category)) {
             $query->whereHas('category', function (Builder $q) use ($category) {
                 if (is_numeric($category)) {
                     $q->where('id', (int) $category);
@@ -41,7 +39,7 @@ class ProductQueryFilter
             $search = mb_strtolower(trim($search));
             $query->where(function (Builder $q) use ($search) {
                 $q->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
-                  ->orWhereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
+                    ->orWhereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
             });
         }
 

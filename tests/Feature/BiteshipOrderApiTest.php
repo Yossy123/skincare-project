@@ -2,11 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Address;
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Shipment;
-use App\Models\User;
 use App\Services\BiteshipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -51,7 +46,7 @@ class BiteshipOrderApiTest extends TestCase
                     'unit_price' => 295000,
                     'weight' => 200,
                     'quantity' => 1,
-                ]
+                ],
             ],
         ]);
 

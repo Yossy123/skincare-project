@@ -13,18 +13,12 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AddressController extends Controller
 {
-    /**
-     * @param AddressService $addressService
-     */
     public function __construct(
         protected AddressService $addressService
     ) {}
 
     /**
      * Display a listing of the user's addresses.
-     *
-     * @param Request $request
-     * @return AnonymousResourceCollection
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -35,9 +29,6 @@ class AddressController extends Controller
 
     /**
      * Store a newly created address for the authenticated user.
-     *
-     * @param AddressRequest $request
-     * @return JsonResponse
      */
     public function store(AddressRequest $request): JsonResponse
     {
@@ -53,16 +44,12 @@ class AddressController extends Controller
 
     /**
      * Display the specified address.
-     *
-     * @param Request $request
-     * @param int $id
-     * @return JsonResponse|AddressResource
      */
     public function show(Request $request, int $id): JsonResponse|AddressResource
     {
         $address = Address::find($id);
 
-        if (!$address) {
+        if (! $address) {
             return response()->json(['message' => 'Address not found.'], 404);
         }
 
@@ -75,16 +62,12 @@ class AddressController extends Controller
 
     /**
      * Update the specified address.
-     *
-     * @param AddressRequest $request
-     * @param int $id
-     * @return JsonResponse|AddressResource
      */
     public function update(AddressRequest $request, int $id): JsonResponse|AddressResource
     {
         $address = Address::find($id);
 
-        if (!$address) {
+        if (! $address) {
             return response()->json(['message' => 'Address not found.'], 404);
         }
 
@@ -99,16 +82,12 @@ class AddressController extends Controller
 
     /**
      * Remove the specified address.
-     *
-     * @param Request $request
-     * @param int $id
-     * @return JsonResponse
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
         $address = Address::find($id);
 
-        if (!$address) {
+        if (! $address) {
             return response()->json(['message' => 'Address not found.'], 404);
         }
 

@@ -13,7 +13,7 @@ class OrderExpirationService
     /**
      * Expire stale pending orders and restore reserved inventory stock.
      *
-     * @param int $hoursTimeout Default 24 hours
+     * @param  int  $hoursTimeout  Default 24 hours
      * @return int Number of orders expired
      */
     public function expirePendingOrders(int $hoursTimeout = 24): int
@@ -21,10 +21,7 @@ class OrderExpirationService
         $cutoff = now()->subHours($hoursTimeout);
 
         $pendingOrders = Order::with('orderItems')
-            ->where(function ($q) {
-                $q->where('status', 'PENDING_PAYMENT')
-                    ->orWhere('status', 'pending_payment');
-            })
+            ->where('status', Order::STATUS_PENDING_PAYMENT)
             ->where('created_at', '<=', $cutoff)
             ->get();
 
@@ -32,11 +29,11 @@ class OrderExpirationService
 
         foreach ($pendingOrders as $order) {
             try {
-                DB::transaction(function () use ($order) {
+                DB::transaction(function () use ($order, $hoursTimeout) {
                     /** @var Order $lockedOrder */
                     $lockedOrder = Order::with('orderItems')->where('id', $order->id)->lockForUpdate()->first();
 
-                    if (!$lockedOrder || !in_array(strtoupper($lockedOrder->status), ['PENDING_PAYMENT'], true)) {
+                    if (! $lockedOrder || ! in_array(strtoupper($lockedOrder->status), ['PENDING_PAYMENT'], true)) {
                         return;
                     }
 
@@ -69,14 +66,14 @@ class OrderExpirationService
                         'note' => 'Automatic background job expired order after payment timeout.',
                         'metadata' => [
                             'stock_restored' => true,
-                            'timeout_hours' => 24,
+                            'timeout_hours' => $hoursTimeout,
                         ],
                     ]);
                 });
 
                 $expiredCount++;
             } catch (\Throwable $e) {
-                Log::error("Failed to expire pending order #{$order->id}: " . $e->getMessage());
+                Log::error("Failed to expire pending order #{$order->id}: ".$e->getMessage());
             }
         }
 

@@ -15,9 +15,6 @@ class AuthController extends Controller
 {
     /**
      * Register a new customer account and return an access token.
-     *
-     * @param RegisterRequest $request
-     * @return JsonResponse
      */
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -41,9 +38,6 @@ class AuthController extends Controller
 
     /**
      * Authenticate an existing user and return an access token.
-     *
-     * @param LoginRequest $request
-     * @return JsonResponse
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -51,13 +45,13 @@ class AuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'message' => 'Invalid email or password.',
             ], 401);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             return response()->json([
                 'message' => 'Your account has been deactivated. Please contact customer support.',
             ], 403);
@@ -74,9 +68,6 @@ class AuthController extends Controller
 
     /**
      * Invalidate the current access token on logout.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function logout(Request $request): JsonResponse
     {
@@ -89,9 +80,6 @@ class AuthController extends Controller
 
     /**
      * Get the currently authenticated customer profile.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function me(Request $request): JsonResponse
     {

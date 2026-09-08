@@ -11,6 +11,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
+    /** Canonical order lifecycle statuses (UPPERCASE, persisted as-is). */
+    public const STATUS_PENDING_PAYMENT = 'PENDING_PAYMENT';
+    public const STATUS_PAID = 'PAID';
+    public const STATUS_PROCESSING = 'PROCESSING';
+    public const STATUS_SHIPPED = 'SHIPPED';
+    public const STATUS_DELIVERED = 'DELIVERED';
+    public const STATUS_COMPLETED = 'COMPLETED';
+    public const STATUS_CANCELLED = 'CANCELLED';
+    public const STATUS_EXPIRED = 'EXPIRED';
+
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
 
@@ -118,7 +128,7 @@ class Order extends Model
      */
     public function canBeProcessed(): bool
     {
-        return strtoupper($this->status) === 'PAID';
+        return strtoupper($this->status) === self::STATUS_PAID;
     }
 
     /**
@@ -126,7 +136,7 @@ class Order extends Model
      */
     public function canBeShipped(): bool
     {
-        return strtoupper($this->status) === 'PROCESSING';
+        return strtoupper($this->status) === self::STATUS_PROCESSING;
     }
 
     /**
@@ -134,7 +144,7 @@ class Order extends Model
      */
     public function canBeDelivered(): bool
     {
-        return strtoupper($this->status) === 'SHIPPED';
+        return strtoupper($this->status) === self::STATUS_SHIPPED;
     }
 
     /**
@@ -142,7 +152,7 @@ class Order extends Model
      */
     public function canBeCompleted(): bool
     {
-        return strtoupper($this->status) === 'DELIVERED';
+        return strtoupper($this->status) === self::STATUS_DELIVERED;
     }
 
     /**
@@ -150,7 +160,7 @@ class Order extends Model
      */
     public function canBeCancelled(): bool
     {
-        return in_array(strtoupper($this->status), ['PENDING_PAYMENT', 'PAID', 'PROCESSING'], true);
+        return in_array(strtoupper($this->status), [self::STATUS_PENDING_PAYMENT, self::STATUS_PAID, self::STATUS_PROCESSING], true);
     }
 
     /**

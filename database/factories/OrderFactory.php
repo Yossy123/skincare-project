@@ -26,7 +26,7 @@ class OrderFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'status' => fake()->randomElement(['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled']),
+            'status' => fake()->randomElement(['PENDING_PAYMENT', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'COMPLETED', 'CANCELLED', 'EXPIRED']),
             'subtotal' => $subtotal,
             'shipping_cost' => $shippingCost,
             'total' => $total,

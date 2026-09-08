@@ -8,7 +8,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class AdminCustomerService
 {
@@ -21,19 +20,12 @@ class AdminCustomerService
         'SHIPPED',
         'DELIVERED',
         'COMPLETED',
-        'paid',
-        'processing',
-        'shipped',
-        'delivered',
-        'completed',
     ];
 
     /**
      * List customers with aggregated lifetime metrics, search, and pagination.
      *
-     * @param array<string, mixed> $filters
-     * @param int $perPage
-     * @return LengthAwarePaginator
+     * @param  array<string, mixed>  $filters
      */
     public function listCustomers(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
@@ -53,7 +45,7 @@ class AdminCustomerService
             ]);
 
         // Search by name, email, or phone
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = trim((string) $filters['search']);
             $query->where(function ($q) use ($search) {
                 $q->where('users.name', 'ilike', "%{$search}%")
@@ -71,12 +63,12 @@ class AdminCustomerService
         }
 
         // Filter by Registration Date (Asia/Jakarta)
-        if (!empty($filters['start_date'])) {
+        if (! empty($filters['start_date'])) {
             $start = Carbon::parse($filters['start_date'], 'Asia/Jakarta')->startOfDay();
             $query->where('users.created_at', '>=', $start);
         }
 
-        if (!empty($filters['end_date'])) {
+        if (! empty($filters['end_date'])) {
             $end = Carbon::parse($filters['end_date'], 'Asia/Jakarta')->endOfDay();
             $query->where('users.created_at', '<=', $end);
         }
@@ -104,7 +96,6 @@ class AdminCustomerService
     /**
      * Get complete customer profile, aggregate statistics, order history, and audit trail.
      *
-     * @param int $customerId
      * @return array<string, mixed>
      */
     public function getCustomerDetail(int $customerId): array
@@ -114,19 +105,19 @@ class AdminCustomerService
             'addresses',
             'customerAuditLogs.admin:id,name,email',
         ])
-        ->where('id', $customerId)
-        ->where(function ($q) {
-            $q->where('role', 'customer')->orWhereNull('role');
-        })
-        ->firstOrFail();
+            ->where('id', $customerId)
+            ->where(function ($q) {
+                $q->where('role', 'customer')->orWhereNull('role');
+            })
+            ->firstOrFail();
 
         // Calculate Authoritative Order Statistics
         $ordersQuery = Order::where('user_id', $customer->id);
 
         $totalOrders = (clone $ordersQuery)->count();
-        $completedOrders = (clone $ordersQuery)->whereIn('status', ['COMPLETED', 'DELIVERED', 'completed', 'delivered'])->count();
-        $cancelledOrders = (clone $ordersQuery)->whereIn('status', ['CANCELLED', 'EXPIRED', 'cancelled', 'expired'])->count();
-        
+        $completedOrders = (clone $ordersQuery)->whereIn('status', ['COMPLETED', 'DELIVERED'])->count();
+        $cancelledOrders = (clone $ordersQuery)->whereIn('status', ['CANCELLED', 'EXPIRED'])->count();
+
         $paidOrders = (clone $ordersQuery)->whereIn('status', self::PAID_STATUSES);
         $paidOrdersCount = (clone $paidOrders)->count();
         $totalSpending = (float) ((clone $paidOrders)->sum('total') ?? 0);
@@ -172,9 +163,9 @@ class AdminCustomerService
                 'cancelled_orders' => $cancelledOrders,
                 'paid_orders_count' => $paidOrdersCount,
                 'total_spending' => $totalSpending,
-                'formatted_total_spending' => 'Rp ' . number_format($totalSpending, 0, ',', '.'),
+                'formatted_total_spending' => 'Rp '.number_format($totalSpending, 0, ',', '.'),
                 'average_order_value' => $averageOrderValue,
-                'formatted_aov' => 'Rp ' . number_format($averageOrderValue, 0, ',', '.'),
+                'formatted_aov' => 'Rp '.number_format($averageOrderValue, 0, ',', '.'),
                 'last_order_at' => $lastOrder?->created_at?->toIso8601String(),
             ],
             'addresses' => $customer->addresses,
@@ -199,10 +190,6 @@ class AdminCustomerService
     /**
      * Toggle customer account activation status with audit logging.
      *
-     * @param int $customerId
-     * @param User $admin
-     * @param string|null $reason
-     * @param string|null $note
      * @return array<string, mixed>
      */
     public function toggleActivation(int $customerId, User $admin, ?string $reason = null, ?string $note = null): array
@@ -216,12 +203,12 @@ class AdminCustomerService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $newStatus = !$customer->is_active;
+            $newStatus = ! $customer->is_active;
             $customer->is_active = $newStatus;
             $customer->save();
 
             // Revoke active sessions/tokens if deactivated
-            if (!$newStatus) {
+            if (! $newStatus) {
                 $customer->tokens()->delete();
             }
 

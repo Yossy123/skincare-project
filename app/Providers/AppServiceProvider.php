@@ -2,6 +2,13 @@
 
 namespace App\Providers;
 
+use App\Contracts\NotificationProviderInterface;
+use App\Contracts\ShippingProviderInterface;
+use App\Services\BiteshipService;
+use App\Services\Notifications\LogNotificationProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -12,13 +19,13 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(
-            \App\Contracts\NotificationProviderInterface::class,
-            \App\Services\Notifications\LogNotificationProvider::class
+            NotificationProviderInterface::class,
+            LogNotificationProvider::class
         );
 
         $this->app->bind(
-            \App\Contracts\ShippingProviderInterface::class,
-            \App\Services\BiteshipService::class
+            ShippingProviderInterface::class,
+            BiteshipService::class
         );
     }
 
@@ -27,6 +34,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Brute-force protection for login/register.
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip().'|'.strtolower((string) $request->input('email')));
+        });
+
+        // Guest booking creation & lookup (spam prevention).
+        RateLimiter::for('booking', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
+        // Biteship quota protection for public shipping lookups.
+        RateLimiter::for('shipping', function (Request $request) {
+            return Limit::perMinute(30)->by($request->ip());
+        });
     }
 }

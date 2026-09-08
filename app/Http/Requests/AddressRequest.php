@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AddressRequest extends FormRequest
@@ -20,15 +21,15 @@ class AddressRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Support both recipient_name / name and address_line / address
-        if ($this->has('recipient_name') && !$this->has('name')) {
+        if ($this->has('recipient_name') && ! $this->has('name')) {
             $this->merge(['name' => $this->input('recipient_name')]);
-        } elseif ($this->has('name') && !$this->has('recipient_name')) {
+        } elseif ($this->has('name') && ! $this->has('recipient_name')) {
             $this->merge(['recipient_name' => $this->input('name')]);
         }
 
-        if ($this->has('address_line') && !$this->has('address')) {
+        if ($this->has('address_line') && ! $this->has('address')) {
             $this->merge(['address' => $this->input('address_line')]);
-        } elseif ($this->has('address') && !$this->has('address_line')) {
+        } elseif ($this->has('address') && ! $this->has('address_line')) {
             $this->merge(['address_line' => $this->input('address')]);
         }
     }
@@ -36,7 +37,7 @@ class AddressRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

@@ -14,7 +14,6 @@ class PaymentAnalyticsService
     /**
      * Get aggregated payment performance and Midtrans transaction health.
      *
-     * @param string $period
      * @return array<string, mixed>
      */
     public function getPaymentAnalytics(string $period = '30d'): array
@@ -76,16 +75,18 @@ class PaymentAnalyticsService
                 if (isset($payment->raw_response['payment_type'])) {
                     return strtoupper(str_replace('_', ' ', $payment->raw_response['payment_type']));
                 }
+
                 return strtoupper($payment->provider ?: 'MANUAL');
             })
             ->map(function ($group, $methodName) {
                 $count = $group->count();
                 $amount = (float) $group->sum('amount');
+
                 return [
                     'method' => $methodName,
                     'count' => $count,
                     'amount' => $amount,
-                    'formatted_amount' => 'Rp ' . number_format($amount, 0, ',', '.'),
+                    'formatted_amount' => 'Rp '.number_format($amount, 0, ',', '.'),
                 ];
             })
             ->values();
@@ -98,22 +99,22 @@ class PaymentAnalyticsService
                 'successful' => [
                     'count' => $successfulCount,
                     'amount' => $successfulAmount,
-                    'formatted_amount' => 'Rp ' . number_format($successfulAmount, 0, ',', '.'),
+                    'formatted_amount' => 'Rp '.number_format($successfulAmount, 0, ',', '.'),
                 ],
                 'pending' => [
                     'count' => $pendingCount,
                     'amount' => $pendingAmount,
-                    'formatted_amount' => 'Rp ' . number_format($pendingAmount, 0, ',', '.'),
+                    'formatted_amount' => 'Rp '.number_format($pendingAmount, 0, ',', '.'),
                 ],
                 'failed' => [
                     'count' => $failedCount,
                     'amount' => $failedAmount,
-                    'formatted_amount' => 'Rp ' . number_format($failedAmount, 0, ',', '.'),
+                    'formatted_amount' => 'Rp '.number_format($failedAmount, 0, ',', '.'),
                 ],
                 'expired' => [
                     'count' => $expiredCount,
                     'amount' => $expiredAmount,
-                    'formatted_amount' => 'Rp ' . number_format($expiredAmount, 0, ',', '.'),
+                    'formatted_amount' => 'Rp '.number_format($expiredAmount, 0, ',', '.'),
                 ],
             ],
             'payment_methods' => $paymentMethods,

@@ -13,7 +13,6 @@ class AddressService
     /**
      * Retrieve all addresses belonging to the user (default address first).
      *
-     * @param User $user
      * @return Collection<int, Address>
      */
     public function getAddressesForUser(User $user): Collection
@@ -27,9 +26,7 @@ class AddressService
     /**
      * Create a new address for the user.
      *
-     * @param User $user
-     * @param array<string, mixed> $data
-     * @return Address
+     * @param  array<string, mixed>  $data
      *
      * @throws ValidationException
      */
@@ -39,7 +36,7 @@ class AddressService
 
         return DB::transaction(function () use ($user, $data) {
             $existingCount = $user->addresses()->count();
-            $shouldBeDefault = !empty($data['is_default']) || $existingCount === 0;
+            $shouldBeDefault = ! empty($data['is_default']) || $existingCount === 0;
 
             if ($shouldBeDefault) {
                 $user->addresses()->where('is_default', true)->update(['is_default' => false]);
@@ -55,16 +52,14 @@ class AddressService
     /**
      * Update an existing address.
      *
-     * @param Address $address
-     * @param array<string, mixed> $data
-     * @return Address
+     * @param  array<string, mixed>  $data
      *
      * @throws ValidationException
      */
     public function updateAddress(Address $address, array $data): Address
     {
         return DB::transaction(function () use ($address, $data) {
-            if (!empty($data['is_default']) && !$address->is_default) {
+            if (! empty($data['is_default']) && ! $address->is_default) {
                 Address::where('user_id', $address->user_id)
                     ->where('id', '!=', $address->id)
                     ->where('is_default', true)
@@ -78,7 +73,7 @@ class AddressService
                 ->where('is_default', true)
                 ->exists();
 
-            if (!$hasDefault) {
+            if (! $hasDefault) {
                 $firstAddress = Address::where('user_id', $address->user_id)
                     ->orderByDesc('id')
                     ->first();
@@ -96,9 +91,6 @@ class AddressService
 
     /**
      * Delete an address.
-     *
-     * @param Address $address
-     * @return void
      */
     public function deleteAddress(Address $address): void
     {
@@ -123,15 +115,14 @@ class AddressService
     /**
      * Validate address data fields for shipping readiness.
      *
-     * @param array<string, mixed> $data
-     * @return void
+     * @param  array<string, mixed>  $data
      *
      * @throws ValidationException
      */
     protected function validateAddressPayload(array $data): void
     {
         $postalCode = trim((string) ($data['postal_code'] ?? ''));
-        if (!empty($postalCode) && !preg_match('/^\d{5}$/', $postalCode)) {
+        if (! empty($postalCode) && ! preg_match('/^\d{5}$/', $postalCode)) {
             throw ValidationException::withMessages([
                 'postal_code' => ['Postal code must be a valid 5-digit number.'],
             ]);

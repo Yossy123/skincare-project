@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Product
+ * @mixin Product
  */
 class ProductResource extends JsonResource
 {
@@ -25,7 +26,7 @@ class ProductResource extends JsonResource
             'slug' => $this->slug,
             'description' => $this->description,
             'price' => (float) $this->price,
-            'formatted_price' => 'Rp ' . number_format((float) $this->price, 0, ',', '.'),
+            'formatted_price' => 'Rp '.number_format((float) $this->price, 0, ',', '.'),
             'weight' => (int) $this->weight,
             'stock' => (int) $this->stock,
             'image' => $this->image,

@@ -39,7 +39,6 @@ interface ShippingProviderInterface
     /**
      * Search location areas for destination matching.
      *
-     * @param string $search
      * @return array<int, array{
      *     id: string|int,
      *     label: string,
@@ -55,7 +54,7 @@ interface ShippingProviderInterface
     /**
      * Create an external courier booking / shipment order.
      *
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array{
      *     success: bool,
      *     order_id: string,
@@ -73,8 +72,6 @@ interface ShippingProviderInterface
     /**
      * Retrieve tracking status and history for a shipment.
      *
-     * @param string $trackingIdOrWaybill
-     * @param string|null $courierCode
      * @return array{
      *     tracking_id: ?string,
      *     waybill_id: ?string,
@@ -87,17 +84,12 @@ interface ShippingProviderInterface
 
     /**
      * Verify incoming webhook request authenticity.
-     *
-     * @param mixed $request
-     * @return bool
      */
     public function verifyWebhook(mixed $request): bool;
 
     /**
      * Cancel an external courier booking / shipment order.
      *
-     * @param string $orderId
-     * @param string $reason
      * @return array{
      *     success: bool,
      *     order_id: string,
@@ -111,7 +103,7 @@ interface ShippingProviderInterface
     /**
      * Process normalized webhook payload.
      *
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array{
      *     order_id: ?string,
      *     waybill_id: ?string,

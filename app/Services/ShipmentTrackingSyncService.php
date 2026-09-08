@@ -34,7 +34,7 @@ class ShipmentTrackingSyncService
 
         foreach ($activeShipments as $shipment) {
             try {
-                $hasBiteshipTrackingId = !empty($shipment->biteship_tracking_id);
+                $hasBiteshipTrackingId = ! empty($shipment->biteship_tracking_id);
                 $tracking = $this->shippingProvider->getTracking(
                     (string) ($shipment->biteship_tracking_id
                         ?: $shipment->biteship_waybill_id
@@ -73,7 +73,7 @@ class ShipmentTrackingSyncService
                     $updatedCount++;
                 }
             } catch (\Exception $e) {
-                Log::warning('Shipment tracking sync error for shipment #' . $shipment->id, [
+                Log::warning('Shipment tracking sync error for shipment #'.$shipment->id, [
                     'message' => $e->getMessage(),
                 ]);
             }

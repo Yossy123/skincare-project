@@ -89,7 +89,7 @@ class OrderService
             // 7. Create Order with PENDING_PAYMENT status and frozen address snapshot
             $order = Order::create([
                 'user_id' => $user->id,
-                'status' => 'PENDING_PAYMENT',
+                'status' => Order::STATUS_PENDING_PAYMENT,
                 'subtotal' => $subtotal,
                 'shipping_cost' => $shippingInfo['cost'],
                 'total' => $total,

@@ -15,9 +15,13 @@ class AdminProductCategoryManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $admin;
+
     protected string $adminToken;
+
     protected User $customer;
+
     protected string $customerToken;
+
     protected Category $category;
 
     protected function setUp(): void

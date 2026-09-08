@@ -9,8 +9,6 @@ class HealthController extends Controller
 {
     /**
      * Health check endpoint.
-     *
-     * @return JsonResponse
      */
     public function index(): JsonResponse
     {

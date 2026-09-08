@@ -2,11 +2,12 @@
 
 namespace App\Http\Resources;
 
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\OrderItem
+ * @mixin OrderItem
  */
 class OrderItemResource extends JsonResource
 {
@@ -22,10 +23,10 @@ class OrderItemResource extends JsonResource
             'product_id' => $this->product_id,
             'product_name' => $this->product_name,
             'unit_price' => (float) $this->unit_price,
-            'formatted_unit_price' => 'Rp ' . number_format((float) $this->unit_price, 0, ',', '.'),
+            'formatted_unit_price' => 'Rp '.number_format((float) $this->unit_price, 0, ',', '.'),
             'quantity' => $this->quantity,
             'subtotal' => (float) $this->subtotal,
-            'formatted_subtotal' => 'Rp ' . number_format((float) $this->subtotal, 0, ',', '.'),
+            'formatted_subtotal' => 'Rp '.number_format((float) $this->subtotal, 0, ',', '.'),
         ];
     }
 }

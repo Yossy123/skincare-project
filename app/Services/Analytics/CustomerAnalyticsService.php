@@ -15,8 +15,6 @@ class CustomerAnalyticsService
     /**
      * Get aggregated customer analytics.
      *
-     * @param string $period
-     * @param int $topCustomersLimit
      * @return array<string, mixed>
      */
     public function getCustomerAnalytics(string $period = '30d', int $topCustomersLimit = 5): array
@@ -60,6 +58,7 @@ class CustomerAnalyticsService
             ->get()
             ->map(function ($c) {
                 $spent = (float) $c->total_spent;
+
                 return [
                     'id' => $c->customer_id,
                     'name' => $c->customer_name,
@@ -67,7 +66,7 @@ class CustomerAnalyticsService
                     'phone' => $c->customer_phone,
                     'orders_count' => (int) $c->orders_count,
                     'total_spent' => $spent,
-                    'formatted_total_spent' => 'Rp ' . number_format($spent, 0, ',', '.'),
+                    'formatted_total_spent' => 'Rp '.number_format($spent, 0, ',', '.'),
                     'last_order_date' => $c->last_order_date,
                 ];
             });

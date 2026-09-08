@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Contracts\NotificationProviderInterface;
 use App\Models\Order;
 use App\Models\OrderAuditLog;
-use App\Services\Notifications\LogNotificationProvider;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -19,15 +18,11 @@ class SendCustomerNotificationJob implements ShouldQueue
 
     /**
      * The number of times the job may be attempted.
-     *
-     * @var int
      */
     public int $tries = 3;
 
     /**
      * The number of seconds to wait before retrying the job.
-     *
-     * @var int
      */
     public int $backoff = 5;
 
@@ -69,13 +64,13 @@ class SendCustomerNotificationJob implements ShouldQueue
                 ]);
             }
         } catch (\Throwable $e) {
-            Log::error("Failed to send customer notification [{$this->eventType}] for order #{$this->order->id}: " . $e->getMessage());
+            Log::error("Failed to send customer notification [{$this->eventType}] for order #{$this->order->id}: ".$e->getMessage());
 
             OrderAuditLog::create([
                 'order_id' => $this->order->id,
                 'action' => 'NOTIFICATION_FAILED',
                 'new_status' => $this->order->status,
-                'note' => "Failed sending customer notification [{$this->eventType}]: " . $e->getMessage(),
+                'note' => "Failed sending customer notification [{$this->eventType}]: ".$e->getMessage(),
             ]);
 
             throw $e;

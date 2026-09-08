@@ -13,9 +13,7 @@ class CheckoutService
     /**
      * Validate checkout items against database records and calculate authoritative totals.
      *
-     * @param User $user
-     * @param array<int, array{product_id: int, quantity: int}> $itemsPayload
-     * @param int|null $addressId
+     * @param  array<int, array{product_id: int, quantity: int}>  $itemsPayload
      * @return array<string, mixed>
      *
      * @throws ValidationException
@@ -50,13 +48,13 @@ class CheckoutService
         foreach ($quantitiesByProductId as $productId => $quantity) {
             $product = $products->get($productId);
 
-            if (!$product) {
+            if (! $product) {
                 throw ValidationException::withMessages([
                     'items' => ["Product with ID {$productId} was not found."],
                 ]);
             }
 
-            if (!$product->is_active) {
+            if (! $product->is_active) {
                 throw ValidationException::withMessages([
                     'items' => ["Product '{$product->name}' is currently unavailable."],
                 ]);
@@ -90,12 +88,12 @@ class CheckoutService
                     'slug' => $product->category->slug,
                 ] : null,
                 'price' => $unitPrice,
-                'formatted_price' => 'Rp ' . number_format($unitPrice, 0, ',', '.'),
+                'formatted_price' => 'Rp '.number_format($unitPrice, 0, ',', '.'),
                 'weight' => $itemWeight,
                 'stock' => $product->stock,
                 'quantity' => $quantity,
                 'line_subtotal' => $lineSubtotal,
-                'formatted_line_subtotal' => 'Rp ' . number_format($lineSubtotal, 0, ',', '.'),
+                'formatted_line_subtotal' => 'Rp '.number_format($lineSubtotal, 0, ',', '.'),
             ];
         }
 
@@ -106,7 +104,7 @@ class CheckoutService
                 ->where('user_id', $user->id)
                 ->first();
 
-            if (!$address) {
+            if (! $address) {
                 throw ValidationException::withMessages([
                     'address_id' => ['The selected delivery address is invalid or does not belong to your account.'],
                 ]);
@@ -122,14 +120,14 @@ class CheckoutService
         }
 
         $formattedWeight = $totalWeight >= 1000
-            ? number_format($totalWeight / 1000, 2, '.', '') . ' kg'
+            ? number_format($totalWeight / 1000, 2, '.', '').' kg'
             : "{$totalWeight} g";
 
         return [
             'items' => $validatedItems,
             'summary' => [
                 'subtotal' => $subtotal,
-                'formatted_subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.'),
+                'formatted_subtotal' => 'Rp '.number_format($subtotal, 0, ',', '.'),
                 'total_weight' => $totalWeight,
                 'formatted_total_weight' => $formattedWeight,
                 'total_items' => $totalItemsCount,

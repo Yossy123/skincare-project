@@ -24,7 +24,7 @@ class PaymentFactory extends Factory
         return [
             'order_id' => Order::factory(),
             'provider' => 'midtrans',
-            'transaction_id' => 'TRX-' . Str::upper(Str::random(12)),
+            'transaction_id' => 'TRX-'.Str::upper(Str::random(12)),
             'status' => 'pending',
             'amount' => fake()->randomFloat(2, 100000, 2000000),
             'paid_at' => null,
@@ -41,7 +41,7 @@ class PaymentFactory extends Factory
     public function success(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'success',
+            'status' => 'paid',
             'paid_at' => now(),
         ]);
     }

@@ -69,7 +69,7 @@ class Payment extends Model
      */
     public function isRefunded(): bool
     {
-        return $this->status === 'refunded' || !empty($this->refunded_at);
+        return $this->status === 'refunded' || ! empty($this->refunded_at);
     }
 
     /**
@@ -78,6 +78,7 @@ class Payment extends Model
     public function canBeRefunded(): bool
     {
         $eligibleStatuses = ['settlement', 'capture', 'success', 'paid'];
-        return in_array(strtolower($this->status), $eligibleStatuses, true) && !$this->isRefunded();
+
+        return in_array(strtolower($this->status), $eligibleStatuses, true) && ! $this->isRefunded();
     }
 }

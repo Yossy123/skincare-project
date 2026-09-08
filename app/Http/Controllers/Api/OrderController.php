@@ -19,9 +19,6 @@ class OrderController extends Controller
 
     /**
      * Store a newly created order in storage.
-     *
-     * @param OrderStoreRequest $request
-     * @return JsonResponse
      */
     public function store(OrderStoreRequest $request): JsonResponse
     {
@@ -37,9 +34,6 @@ class OrderController extends Controller
 
     /**
      * Display a listing of orders for the authenticated user.
-     *
-     * @param Request $request
-     * @return AnonymousResourceCollection
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -50,16 +44,12 @@ class OrderController extends Controller
 
     /**
      * Display the specified order for the authenticated user.
-     *
-     * @param Request $request
-     * @param int $id
-     * @return JsonResponse|OrderResource
      */
     public function show(Request $request, int $id): JsonResponse|OrderResource
     {
         $order = Order::with(['orderItems', 'shipment', 'payment'])->find($id);
 
-        if (!$order) {
+        if (! $order) {
             return response()->json(['message' => 'Order not found.'], 404);
         }
 

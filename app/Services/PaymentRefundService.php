@@ -15,19 +15,25 @@ use Illuminate\Validation\ValidationException;
 
 class PaymentRefundService
 {
+    public function isEnabled(): bool
+    {
+        return (bool) config('services.midtrans.enabled', false);
+    }
+
     /**
      * Process a verified refund for an order via Midtrans API.
      *
-     * @param int $orderId
-     * @param User $admin
-     * @param float $amount
-     * @param string $reason
-     * @return Order
      *
      * @throws ValidationException
      */
     public function refundOrder(int $orderId, User $admin, float $amount, string $reason): Order
     {
+        if (! $this->isEnabled()) {
+            throw ValidationException::withMessages([
+                'midtrans' => ['Payment via Midtrans sementara tidak tersedia.'],
+            ]);
+        }
+
         return DB::transaction(function () use ($orderId, $admin, $amount, $reason) {
             /** @var Order $order */
             $order = Order::with(['payment', 'orderItems'])->where('id', $orderId)->lockForUpdate()->firstOrFail();
@@ -35,7 +41,7 @@ class PaymentRefundService
             /** @var Payment|null $payment */
             $payment = $order->payment;
 
-            if (!$payment) {
+            if (! $payment) {
                 throw ValidationException::withMessages([
                     'payment' => ['No payment transaction record found for this order.'],
                 ]);
@@ -48,7 +54,7 @@ class PaymentRefundService
                 ]);
             }
 
-            if (!$payment->canBeRefunded()) {
+            if (! $payment->canBeRefunded()) {
                 throw ValidationException::withMessages([
                     'payment' => ["Payment with status '{$payment->status}' is not eligible for refund. Only verified paid transactions can be refunded."],
                 ]);
@@ -57,14 +63,14 @@ class PaymentRefundService
             $maxRefundAmount = (float) $payment->amount;
             if ($amount <= 0 || $amount > $maxRefundAmount) {
                 throw ValidationException::withMessages([
-                    'amount' => ["Refund amount must be between Rp 1 and Rp " . number_format($maxRefundAmount, 0, ',', '.') . "."],
+                    'amount' => ['Refund amount must be between Rp 1 and Rp '.number_format($maxRefundAmount, 0, ',', '.').'.'],
                 ]);
             }
 
-            $refundKey = 'REF-' . $order->id . '-' . time() . '-' . uniqid();
+            $refundKey = 'REF-'.$order->id.'-'.time().'-'.uniqid();
             $refundResult = $this->callMidtransRefundApi($payment, $amount, $reason, $refundKey);
 
-            if (!$refundResult['success']) {
+            if (! $refundResult['success']) {
                 // Record failure audit log
                 OrderAuditLog::create([
                     'order_id' => $order->id,
@@ -73,7 +79,7 @@ class PaymentRefundService
                     'previous_status' => $order->status,
                     'new_status' => $order->status,
                     'reason' => $reason,
-                    'note' => "Refund failed from payment gateway: " . $refundResult['error'],
+                    'note' => 'Refund failed from payment gateway: '.$refundResult['error'],
                     'metadata' => [
                         'amount' => $amount,
                         'provider_error' => $refundResult['error'],
@@ -81,7 +87,7 @@ class PaymentRefundService
                 ]);
 
                 throw ValidationException::withMessages([
-                    'midtrans' => ["Payment gateway refund failed: " . $refundResult['error']],
+                    'midtrans' => ['Payment gateway refund failed: '.$refundResult['error']],
                 ]);
             }
 
@@ -110,7 +116,7 @@ class PaymentRefundService
             // Update Order Status to CANCELLED / REFUNDED
             $order->status = 'CANCELLED';
             $order->cancellation_reason = 'payment_issue';
-            $order->cancellation_note = "Payment refunded (Rp " . number_format($amount, 0, ',', '.') . "). Reason: {$reason}";
+            $order->cancellation_note = 'Payment refunded (Rp '.number_format($amount, 0, ',', '.')."). Reason: {$reason}";
             $order->cancelled_by = $admin->id;
             $order->cancelled_at = now();
             $order->save();
@@ -123,7 +129,7 @@ class PaymentRefundService
                 'previous_status' => $previousStatus,
                 'new_status' => 'CANCELLED',
                 'reason' => $reason,
-                'note' => "Refund of Rp " . number_format($amount, 0, ',', '.') . " completed via Midtrans. Reference: {$payment->refund_id}.",
+                'note' => 'Refund of Rp '.number_format($amount, 0, ',', '.')." completed via Midtrans. Reference: {$payment->refund_id}.",
                 'metadata' => [
                     'refund_id' => $payment->refund_id,
                     'refund_amount' => $amount,
@@ -141,10 +147,6 @@ class PaymentRefundService
     /**
      * Call Midtrans Direct Refund endpoint.
      *
-     * @param Payment $payment
-     * @param float $amount
-     * @param string $reason
-     * @param string $refundKey
      * @return array{success: bool, refund_id?: string, error?: string, raw_response?: array}
      */
     protected function callMidtransRefundApi(Payment $payment, float $amount, string $reason, string $refundKey): array
@@ -178,6 +180,7 @@ class PaymentRefundService
 
             if ($response->successful()) {
                 $json = $response->json();
+
                 return [
                     'success' => true,
                     'refund_id' => $json['refund_key'] ?? $refundKey,
@@ -186,7 +189,7 @@ class PaymentRefundService
             }
 
             $errorJson = $response->json();
-            $errorMessage = $errorJson['status_message'] ?? 'Midtrans refund rejected (HTTP ' . $response->status() . ')';
+            $errorMessage = $errorJson['status_message'] ?? 'Midtrans refund rejected (HTTP '.$response->status().')';
 
             return [
                 'success' => false,
@@ -194,10 +197,11 @@ class PaymentRefundService
                 'raw_response' => $errorJson,
             ];
         } catch (\Throwable $e) {
-            Log::error("Midtrans refund connection exception: " . $e->getMessage());
+            Log::error('Midtrans refund connection exception: '.$e->getMessage());
+
             return [
                 'success' => false,
-                'error' => 'Could not connect to payment gateway: ' . $e->getMessage(),
+                'error' => 'Could not connect to payment gateway: '.$e->getMessage(),
             ];
         }
     }

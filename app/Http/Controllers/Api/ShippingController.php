@@ -19,9 +19,6 @@ class ShippingController extends Controller
 
     /**
      * Calculate and return normalized shipping rates from supported couriers via Biteship.
-     *
-     * @param ShippingRateRequest $request
-     * @return JsonResponse
      */
     public function rates(ShippingRateRequest $request): JsonResponse
     {
@@ -29,7 +26,7 @@ class ShippingController extends Controller
         $rateItems = null;
         $weight = (int) $validated['weight'];
 
-        if (!empty($validated['items'])) {
+        if (! empty($validated['items'])) {
             $quantities = collect($validated['items'])
                 ->groupBy('product_id')
                 ->map(fn ($items) => $items->sum('quantity'));
@@ -39,7 +36,7 @@ class ShippingController extends Controller
 
             foreach ($quantities as $productId => $quantity) {
                 $product = $products->get($productId);
-                if (!$product || !$product->is_active) {
+                if (! $product || ! $product->is_active) {
                     return response()->json(['message' => 'One or more products are unavailable.'], 422);
                 }
 
@@ -66,6 +63,7 @@ class ShippingController extends Controller
             throw $e;
         } catch (Throwable $e) {
             report($e);
+
             return response()->json([
                 'message' => $e->getMessage() ?: 'Shipping rates are currently unavailable. Please try again later.',
             ], 502);
@@ -78,9 +76,6 @@ class ShippingController extends Controller
 
     /**
      * Search domestic destination locations using Biteship areas API.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function destinations(Request $request): JsonResponse
     {

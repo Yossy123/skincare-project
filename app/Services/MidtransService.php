@@ -9,6 +9,11 @@ use RuntimeException;
 
 class MidtransService
 {
+    public function isEnabled(): bool
+    {
+        return (bool) config('services.midtrans.enabled', false);
+    }
+
     protected function client(): PendingRequest
     {
         $serverKey = (string) config('services.midtrans.server_key', '');
@@ -34,6 +39,10 @@ class MidtransService
     /** @param array<string, mixed> $payload */
     public function createSnapTransaction(array $payload): array
     {
+        if (! $this->isEnabled()) {
+            throw new RuntimeException('Payment via Midtrans sementara tidak tersedia.');
+        }
+
         $response = $this->client()->post('/snap/v1/transactions', $payload);
 
         if ($response->failed()) {

@@ -28,7 +28,7 @@ class AddressFactory extends Factory
             'city' => 'Jakarta Selatan',
             'district' => 'Kebayoran Baru',
             'postal_code' => fake()->postcode(),
-            'address' => fake()->streetAddress() . ', No. ' . fake()->buildingNumber(),
+            'address' => fake()->streetAddress().', No. '.fake()->buildingNumber(),
             'is_default' => false,
         ];
     }

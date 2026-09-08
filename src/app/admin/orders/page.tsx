@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import {
   fetchAdminOrders,
@@ -11,7 +11,6 @@ import {
 } from '@/lib/api';
 import {
   Search,
-  Filter,
   RefreshCw,
   ShoppingBag,
   ExternalLink,
@@ -19,15 +18,9 @@ import {
   ChevronRight,
   AlertCircle,
   Truck,
-  CreditCard,
-  Calendar,
-  CheckCircle2,
-  Clock,
-  XCircle,
 } from 'lucide-react';
 
 export default function AdminOrdersPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { token } = useAuthStore();
 
@@ -37,15 +30,15 @@ export default function AdminOrdersPage() {
   const [page, setPage] = useState<number>(Number(searchParams.get('page')) || 1);
   const [search, setSearch] = useState<string>(searchParams.get('search') || '');
   const [orderStatus, setOrderStatus] = useState<string>(searchParams.get('order_status') || '');
-  const [paymentStatus, setPaymentStatus] = useState<string>(searchParams.get('payment_status') || '');
+  const paymentStatus = searchParams.get('payment_status') || '';
   const [courier, setCourier] = useState<string>(searchParams.get('courier') || '');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadOrders = useCallback(async () => {
+  const loadOrders = useCallback(async (showLoading = false) => {
     if (!token) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
     setError(null);
 
     try {
@@ -71,8 +64,38 @@ export default function AdminOrdersPage() {
   }, [token, page, search, orderStatus, paymentStatus, courier]);
 
   useEffect(() => {
-    loadOrders();
-  }, [loadOrders]);
+    let isMounted = true;
+    if (token) {
+      fetchAdminOrders(
+        {
+          page,
+          per_page: 15,
+          search: search || undefined,
+          order_status: orderStatus || undefined,
+          payment_status: paymentStatus || undefined,
+          courier: courier || undefined,
+        },
+        token
+      )
+        .then((res) => {
+          if (!isMounted) return;
+          setOrders(res.data);
+          setMeta(res);
+          setError(null);
+          setLoading(false);
+        })
+        .catch((err: unknown) => {
+          if (!isMounted) return;
+          const msg = err instanceof Error ? err.message : 'Failed to load orders';
+          setError(msg);
+          setLoading(false);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token, page, search, orderStatus, paymentStatus, courier]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +148,7 @@ export default function AdminOrdersPage() {
 
         <button
           type="button"
-          onClick={loadOrders}
+          onClick={() => loadOrders(true)}
           disabled={loading}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-300 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all cursor-pointer self-start sm:self-auto disabled:opacity-50"
         >

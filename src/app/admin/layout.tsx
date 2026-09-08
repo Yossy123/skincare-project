@@ -1,16 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthStore, useAuthHydrated } from '@/store/useAuthStore';
 import {
   LayoutDashboard,
   BarChart3,
   ShoppingBag,
   Package,
   Users,
-  CreditCard,
   FolderTree,
   LogOut,
   ChevronRight,
@@ -19,6 +18,9 @@ import {
   ShieldAlert,
   ArrowLeft,
   Sparkles,
+  CalendarDays,
+  Heart,
+  Stethoscope,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -30,18 +32,29 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
 
   const { user, token, isAuthenticated, logout } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useAuthHydrated();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const navItems = [
     {
       name: 'Overview Dashboard',
       href: '/admin/dashboard',
       icon: LayoutDashboard,
+    },
+    {
+      name: 'Bookings & Jadwal',
+      href: '/admin/bookings',
+      icon: CalendarDays,
+    },
+    {
+      name: 'Data Pasien & Medis',
+      href: '/admin/patients',
+      icon: Heart,
+    },
+    {
+      name: 'Dokter & Therapist',
+      href: '/admin/doctors',
+      icon: Stethoscope,
     },
     {
       name: 'Orders Management',

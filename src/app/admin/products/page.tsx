@@ -23,12 +23,10 @@ import {
   AlertCircle,
   CheckCircle2,
   Package,
-  Layers,
   Power,
   ExternalLink,
   ChevronLeft,
   ChevronRight,
-  SlidersHorizontal,
   X,
   TrendingUp,
   TrendingDown,
@@ -76,9 +74,9 @@ export default function AdminProductsPage() {
   const [stockAmount, setStockAmount] = useState<number>(5);
   const [stockReason, setStockReason] = useState<string>('');
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (showLoading = false) => {
     if (!token) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
     setError(null);
     try {
       const [prodRes, catRes] = await Promise.all([
@@ -107,8 +105,42 @@ export default function AdminProductsPage() {
   }, [token, page, search, categoryId, isActiveFilter, stockStatus]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    let isMounted = true;
+    if (token) {
+      Promise.all([
+        fetchAdminProducts(
+          {
+            page,
+            per_page: 15,
+            search: search || undefined,
+            category_id: categoryId || undefined,
+            is_active: isActiveFilter || undefined,
+            stock_status: stockStatus || undefined,
+          },
+          token
+        ),
+        fetchAdminCategories(token),
+      ])
+        .then(([prodRes, catRes]) => {
+          if (!isMounted) return;
+          setProducts(prodRes.data);
+          setMeta(prodRes);
+          setCategories(catRes);
+          setError(null);
+          setLoading(false);
+        })
+        .catch((err: unknown) => {
+          if (!isMounted) return;
+          const msg = err instanceof Error ? err.message : 'Failed to load products';
+          setError(msg);
+          setLoading(false);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token, page, search, categoryId, isActiveFilter, stockStatus]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,7 +308,7 @@ export default function AdminProductsPage() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={loadData}
+            onClick={() => loadData(true)}
             disabled={loading}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-300 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all cursor-pointer disabled:opacity-50"
           >

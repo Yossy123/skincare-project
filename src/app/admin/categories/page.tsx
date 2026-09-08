@@ -20,7 +20,6 @@ import {
   CheckCircle2,
   Layers,
   Power,
-  Tag,
   X,
   AlertTriangle,
 } from 'lucide-react';
@@ -46,9 +45,9 @@ export default function AdminCategoriesPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<AdminCategoryItem | null>(null);
 
-  const loadCategories = useCallback(async () => {
+  const loadCategories = useCallback(async (showLoading = false) => {
     if (!token) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
     setError(null);
     try {
       const data = await fetchAdminCategories(token);
@@ -62,8 +61,27 @@ export default function AdminCategoriesPage() {
   }, [token]);
 
   useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
+    let isMounted = true;
+    if (token) {
+      fetchAdminCategories(token)
+        .then((data) => {
+          if (!isMounted) return;
+          setCategories(data);
+          setError(null);
+          setLoading(false);
+        })
+        .catch((err: unknown) => {
+          if (!isMounted) return;
+          const msg = err instanceof Error ? err.message : 'Failed to load categories';
+          setError(msg);
+          setLoading(false);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   const openCreateModal = () => {
     setEditingCategory(null);
@@ -178,7 +196,7 @@ export default function AdminCategoriesPage() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={loadCategories}
+            onClick={() => loadCategories(true)}
             disabled={loading}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-300 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all cursor-pointer disabled:opacity-50"
           >
@@ -305,7 +323,7 @@ export default function AdminCategoriesPage() {
         ) : (
           <div className="col-span-full py-12 text-center text-zinc-500">
             <FolderTree className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <span>No categories created yet. Click "New Category" above.</span>
+            <span>No categories created yet. Click &quot;New Category&quot; above.</span>
           </div>
         )}
       </div>
@@ -417,7 +435,7 @@ export default function AdminCategoriesPage() {
 
             <p className="text-xs text-zinc-400">
               Are you sure you want to delete category{' '}
-              <strong className="text-white">'{categoryToDelete.name}'</strong>?
+              <strong className="text-white">&apos;{categoryToDelete.name}&apos;</strong>?
             </p>
 
             {(categoryToDelete.products_count ?? 0) > 0 && (

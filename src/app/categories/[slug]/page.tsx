@@ -11,8 +11,15 @@ import { Pagination } from '@/components/Pagination';
 import { CatalogSkeleton } from '@/components/CatalogSkeleton';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { fetchCategories, fetchCategoryBySlug, fetchProducts, Category, Product, PaginationMeta } from '@/lib/api';
-import { Sparkles, ChevronRight, ArrowLeft } from 'lucide-react';
+import {
+  fetchCategories,
+  fetchCategoryBySlug,
+  fetchProducts,
+  Category,
+  Product,
+  PaginationMeta,
+} from '@/lib/api';
+import { Sparkles, ChevronRight } from 'lucide-react';
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -132,7 +139,7 @@ function CategoryCatalogContent({ slug }: { slug: string }) {
       </nav>
 
       {/* Category Header Banner */}
-      <div className="mb-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-rose-100/70 via-pink-50/50 to-stone-50/80 dark:from-rose-950/40 dark:via-zinc-900 dark:to-zinc-900 border border-rose-200/60 dark:border-zinc-800">
+      <div className="mb-8 p-6 sm:p-8 rounded-3xl bg-linear-to-r from-rose-100/70 via-pink-50/50 to-stone-50/80 dark:from-rose-950/40 dark:via-zinc-900 dark:to-zinc-900 border border-rose-200/60 dark:border-zinc-800">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 dark:bg-zinc-800/90 text-rose-700 dark:text-rose-300 text-xs font-semibold mb-3 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-rose-500" />

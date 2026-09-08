@@ -74,7 +74,10 @@ export function CheckoutSummary({
           type="button"
           onClick={onPlaceOrder}
           disabled={!canPlaceOrder || placingOrder}
-          className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer text-center"
+          className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold
+            text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600
+            shadow-md shadow-rose-500/20 transition-all text-center
+            cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {placingOrder ? (
             <>

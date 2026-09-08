@@ -8,8 +8,6 @@ import { Footer } from '@/components/Footer';
 import { useAuthStore, useAuthHydrated } from '@/store/useAuthStore';
 import { createPayment, fetchOrderById, Order } from '@/lib/api';
 import {
-  ShoppingBag,
-  Package,
   MapPin,
   Truck,
   CreditCard,
@@ -34,7 +32,13 @@ export default function OrderDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
 
+  const isMidtransEnabled = process.env.NEXT_PUBLIC_MIDTRANS_ENABLED === 'true';
+
   const handlePayment = async () => {
+    if (!isMidtransEnabled) {
+      setError('Pembayaran online sementara tidak tersedia.');
+      return;
+    }
     if (!token || !order) return;
     setPaying(true); setError(null);
     try {
@@ -47,6 +51,7 @@ export default function OrderDetailPage() {
   };
 
   useEffect(() => {
+    let isMounted = true;
     if (!isAuthHydrated) return;
 
     if (!user || !token) {
@@ -56,18 +61,23 @@ export default function OrderDetailPage() {
 
     if (!orderId) return;
 
-    setLoading(true);
-    setError(null);
-
     fetchOrderById(orderId, token)
       .then((data) => {
+        if (!isMounted) return;
         setOrder(data);
+        setError(null);
+        setLoading(false);
       })
       .catch((err: unknown) => {
+        if (!isMounted) return;
         const msg = err instanceof Error ? err.message : 'Failed to load order details.';
         setError(msg);
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [isAuthHydrated, user, token, orderId, router]);
 
   if (!isAuthHydrated || (!user && loading)) {
@@ -158,7 +168,7 @@ export default function OrderDetailPage() {
                   {order.items?.map((item) => (
                     <div key={item.id} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-800 border border-rose-100 dark:border-zinc-700 flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-linear-to-br from-rose-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-800 border border-rose-100 dark:border-zinc-700 flex items-center justify-center shrink-0">
                           <Sparkles className="w-5 h-5 text-rose-400" />
                         </div>
                         <div>
@@ -254,21 +264,37 @@ export default function OrderDetailPage() {
 
                 {/* Payment Gateway Action (Phase 8 Midtrans) */}
                 <div className="space-y-3 pt-2">
-                  <button
-                    disabled={paying || order.status.toUpperCase() !== 'PENDING_PAYMENT'}
-                    onClick={handlePayment}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 opacity-90 cursor-not-allowed shadow-md shadow-rose-500/20"
-                  >
-                    <CreditCard className="w-4 h-4" />
-                    <span>{paying ? 'Preparing payment...' : 'Pay Now with Midtrans'}</span>
-                  </button>
+                  {order.status.toUpperCase() === 'PENDING_PAYMENT' && (
+                    <>
+                      {isMidtransEnabled ? (
+                        <>
+                          <button
+                            disabled={paying}
+                            onClick={handlePayment}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 cursor-pointer transition-all"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                            <span>{paying ? 'Preparing payment...' : 'Pay Now with Midtrans'}</span>
+                          </button>
 
-                  <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-800 dark:text-amber-200 text-[11px] leading-relaxed flex items-start gap-2">
-                    <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span>
-                      <strong>Secure payment:</strong> Payment status is confirmed by Midtrans server notification.
-                    </span>
-                  </div>
+                          <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-800 dark:text-amber-200 text-[11px] leading-relaxed flex items-start gap-2">
+                            <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                            <span>
+                              <strong>Secure payment:</strong> Payment status is confirmed by Midtrans server notification.
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-800 dark:text-amber-200 text-xs leading-relaxed flex items-start gap-2.5">
+                          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-semibold block mb-0.5">Status Pembayaran:</span>
+                            <span>Pembayaran online sementara tidak tersedia.</span>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </div>

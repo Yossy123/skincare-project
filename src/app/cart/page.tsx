@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { ProductImage } from '@/components/ProductImage';
 import { useCartStore, useCartHydrated } from '@/store/useCartStore';
 import {
   ShoppingBag,
@@ -15,7 +16,6 @@ import {
   ShieldAlert,
   Sparkles,
   ArrowLeft,
-  CheckCircle2,
 } from 'lucide-react';
 
 export default function CartPage() {
@@ -82,7 +82,7 @@ export default function CartPage() {
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20"
             >
               <span>Explore Formulations</span>
               <ArrowRight className="w-4 h-4" />
@@ -103,8 +103,13 @@ export default function CartPage() {
                       <div className="flex items-center gap-4 min-w-0">
                         <Link
                           href={`/products/${item.slug}`}
-                          className="w-20 h-20 rounded-2xl bg-gradient-to-br from-rose-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-800/60 border border-rose-100 dark:border-zinc-700 flex items-center justify-center shrink-0 overflow-hidden"
+                          className="relative w-20 h-20 rounded-2xl bg-linear-to-br from-rose-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-800/60 border border-rose-100 dark:border-zinc-700 flex items-center justify-center shrink-0 overflow-hidden"
                         >
+                          <ProductImage
+                            image={item.image}
+                            alt={item.name}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
                           <Sparkles className="w-8 h-8 text-rose-400" />
                         </Link>
 
@@ -161,7 +166,7 @@ export default function CartPage() {
                         </div>
 
                         {/* Item Subtotal */}
-                        <div className="text-right min-w-[100px]">
+                        <div className="text-right min-w-25">
                           <div className="text-sm sm:text-base font-semibold text-zinc-900 dark:text-zinc-50">
                             Rp {(item.price * item.quantity).toLocaleString('id-ID')}
                           </div>
@@ -232,7 +237,7 @@ export default function CartPage() {
                 <div className="space-y-3 pt-2">
                   <Link
                     href="/checkout"
-                    className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 transition-all text-center"
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 transition-all text-center"
                   >
                     <span>Proceed to Checkout</span>
                     <ArrowRight className="w-4 h-4" />

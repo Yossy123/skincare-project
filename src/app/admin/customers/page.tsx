@@ -17,11 +17,6 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
-  ShoppingBag,
-  CreditCard,
-  Calendar,
-  Power,
-  ShieldCheck,
 } from 'lucide-react';
 
 export default function AdminCustomersPage() {
@@ -34,15 +29,15 @@ export default function AdminCustomersPage() {
   const [page, setPage] = useState<number>(Number(searchParams.get('page')) || 1);
   const [search, setSearch] = useState<string>(searchParams.get('search') || '');
   const [isActiveFilter, setIsActiveFilter] = useState<string>(searchParams.get('is_active') || '');
-  const [startDate, setStartDate] = useState<string>(searchParams.get('start_date') || '');
-  const [endDate, setEndDate] = useState<string>(searchParams.get('end_date') || '');
+  const startDate = searchParams.get('start_date') || '';
+  const endDate = searchParams.get('end_date') || '';
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadCustomers = useCallback(async () => {
+  const loadCustomers = useCallback(async (showLoading = false) => {
     if (!token) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
     setError(null);
     try {
       const res = await fetchAdminCustomers(
@@ -67,8 +62,38 @@ export default function AdminCustomersPage() {
   }, [token, page, search, isActiveFilter, startDate, endDate]);
 
   useEffect(() => {
-    loadCustomers();
-  }, [loadCustomers]);
+    let isMounted = true;
+    if (token) {
+      fetchAdminCustomers(
+        {
+          page,
+          per_page: 15,
+          search: search || undefined,
+          is_active: isActiveFilter || undefined,
+          start_date: startDate || undefined,
+          end_date: endDate || undefined,
+        },
+        token
+      )
+        .then((res) => {
+          if (!isMounted) return;
+          setCustomers(res.data);
+          setMeta(res);
+          setError(null);
+          setLoading(false);
+        })
+        .catch((err: unknown) => {
+          if (!isMounted) return;
+          const msg = err instanceof Error ? err.message : 'Failed to load customers';
+          setError(msg);
+          setLoading(false);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token, page, search, isActiveFilter, startDate, endDate]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +116,7 @@ export default function AdminCustomersPage() {
 
         <button
           type="button"
-          onClick={loadCustomers}
+          onClick={() => loadCustomers(true)}
           disabled={loading}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-zinc-300 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all cursor-pointer self-start sm:self-auto disabled:opacity-50"
         >

@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useCartStore, useCartHydrated } from '@/store/useCartStore';
+import { ProductImage } from '@/components/ProductImage';
 import {
   X,
   ShoppingBag,
@@ -74,7 +75,7 @@ export function CartDrawer() {
 
       {/* Slide-over Panel */}
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white dark:bg-zinc-900 shadow-2xl border-l border-rose-100 dark:border-zinc-800 flex flex-col justify-between transition-transform duration-300 animate-in slide-in-from-right">
+        <div className="w-screen max-w-md bg-white dark:bg-zinc-900 shadow-2xl border-l border-rose-100 dark:border-zinc-800 flex flex-col justify-between animate-slide-in-right">
           {/* Drawer Header */}
           <div className="p-4 sm:p-6 border-b border-rose-100 dark:border-zinc-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -129,8 +130,13 @@ export function CartDrawer() {
                     <Link
                       href={`/products/${item.slug}`}
                       onClick={closeCart}
-                      className="w-16 h-16 rounded-xl bg-gradient-to-br from-rose-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-800/60 border border-rose-100/80 dark:border-zinc-700 flex items-center justify-center shrink-0 overflow-hidden"
+                      className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-rose-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-800/60 border border-rose-100/80 dark:border-zinc-700 flex items-center justify-center shrink-0 overflow-hidden"
                     >
+                      <ProductImage
+                        image={item.image}
+                        alt={item.name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
                       <Sparkles className="w-6 h-6 text-rose-400" />
                     </Link>
 

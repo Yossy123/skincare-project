@@ -10,6 +10,8 @@ import {
   logoutUser as apiLogoutUser,
 } from '@/lib/api';
 
+import { useCartStore } from './useCartStore';
+
 export interface AuthState {
   user: User | null;
   token: string | null;
@@ -99,6 +101,17 @@ export const useAuthStore = create<AuthState>()(
           loading: false,
           error: null,
         });
+
+        // Reset cart on logout
+        try {
+          useCartStore.getState().clearCart();
+          useCartStore.getState().closeCart();
+          if (typeof window !== 'undefined' && window.localStorage) {
+            window.localStorage.removeItem('lumiere-shopping-bag');
+          }
+        } catch {
+          // ignore in non-browser environments
+        }
       },
     }),
     {

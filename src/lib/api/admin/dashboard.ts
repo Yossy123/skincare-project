@@ -79,6 +79,20 @@ export interface AdminDashboardOverview {
     }>;
     out_of_stock_count: number;
   };
+  clinical?: {
+    total_patients: number;
+    new_patients_this_month: number;
+    bookings_today: number;
+    bookings_pending: number;
+    bookings_confirmed: number;
+    bookings_completed: number;
+    today_doctor_schedules?: Array<{
+      id: number;
+      name: string;
+      specialization: string;
+      appointments_count: number;
+    }>;
+  };
 }
 
 /**

@@ -7,6 +7,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { ProductDetailSkeleton } from '@/components/CatalogSkeleton';
 import { ErrorState } from '@/components/ErrorState';
+import { ProductImage } from '@/components/ProductImage';
 import { useCartStore } from '@/store/useCartStore';
 import { fetchProductBySlug, Product } from '@/lib/api';
 import {
@@ -143,7 +144,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
             {/* Product Image Showcase (5 cols) */}
             <div className="lg:col-span-6">
-              <div className="sticky top-28 bg-gradient-to-br from-rose-100/70 via-pink-50/50 to-stone-100/80 dark:from-zinc-900 dark:to-zinc-800 rounded-3xl p-10 sm:p-16 border border-rose-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center shadow-xs">
+              <div className="relative sticky top-28 overflow-hidden bg-gradient-to-br from-rose-100/70 via-pink-50/50 to-stone-100/80 dark:from-zinc-900 dark:to-zinc-800 rounded-3xl p-10 sm:p-16 border border-rose-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center shadow-xs">
+                <ProductImage
+                  image={product.image}
+                  alt={product.name}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
                 <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md shadow-xl shadow-rose-950/5 flex items-center justify-center text-rose-500 mb-6 border border-rose-100/80 dark:border-zinc-700">
                   <Sparkles className="w-16 h-16 sm:w-20 sm:h-20 text-rose-400" />
                 </div>
@@ -242,10 +248,23 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                   <button
                     onClick={handleAddToCart}
                     disabled={product.stock <= 0}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-rose-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                    className={`flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white transition-all duration-300 shadow-md cursor-pointer ${
+                      addedToast
+                        ? 'bg-emerald-600 shadow-emerald-500/30 scale-[1.02]'
+                        : 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-rose-500/25 hover:scale-[1.01] active:scale-[0.99]'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    <ShoppingBag className="w-4 h-4" />
-                    <span>{product.stock > 0 ? 'Add to Shopping Bag' : 'Currently Unavailable'}</span>
+                    {addedToast ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 animate-in zoom-in spin-in-45 duration-200" />
+                        <span>Added to Shopping Bag!</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingBag className="w-4 h-4" />
+                        <span>{product.stock > 0 ? 'Add to Shopping Bag' : 'Currently Unavailable'}</span>
+                      </>
+                    )}
                   </button>
                 </div>
 

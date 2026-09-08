@@ -11,7 +11,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role?: 'customer' | 'admin';
+  role?: 'customer' | 'admin' | 'doctor';
   phone: string | null;
   email_verified_at?: string | null;
   created_at?: string;

@@ -30,7 +30,6 @@ import {
   Calendar,
   Zap,
   Truck,
-  RotateCcw,
   CheckCircle2,
 } from 'lucide-react';
 
@@ -43,9 +42,9 @@ export default function AdminDashboardPage() {
   const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (showLoading = false) => {
     if (!token) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
     setError(null);
     try {
       const [overview, alertData] = await Promise.all([
@@ -95,8 +94,31 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    let isMounted = true;
+    if (token) {
+      Promise.all([
+        fetchAdminOverview(token),
+        fetchOperationalAlerts(token).catch(() => null),
+      ])
+        .then(([overview, alertData]) => {
+          if (!isMounted) return;
+          setData(overview);
+          if (alertData) setAlerts(alertData);
+          setError(null);
+          setLoading(false);
+        })
+        .catch((err: unknown) => {
+          if (!isMounted) return;
+          const msg = err instanceof Error ? err.message : 'Failed to fetch dashboard data';
+          setError(msg);
+          setLoading(false);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   if (loading && !data) {
     return (
@@ -119,7 +141,7 @@ export default function AdminDashboardPage() {
         <h3 className="text-lg font-serif text-white">Dashboard Error</h3>
         <p className="text-xs text-zinc-400">{error}</p>
         <button
-          onClick={loadData}
+          onClick={() => loadData(true)}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-rose-500 hover:bg-rose-600 transition-all cursor-pointer"
         >
           <RefreshCw className="w-3.5 h-3.5" />
@@ -159,7 +181,7 @@ export default function AdminDashboardPage() {
           </Link>
           <button
             type="button"
-            onClick={loadData}
+            onClick={() => loadData(true)}
             disabled={loading}
             className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all cursor-pointer disabled:opacity-50"
             title="Refresh Data"
@@ -367,6 +389,66 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Clinical & Booking System KPI Overview */}
+      {data?.clinical && (
+        <div className="p-6 sm:p-7 rounded-3xl bg-linear-to-r from-zinc-900 via-zinc-900/90 to-rose-950/20 border border-zinc-800 space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-rose-400" />
+                <h3 className="text-base font-serif text-white font-medium">
+                  Klinik & Reservasi Janji Temu
+                </h3>
+              </div>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Monitoring jadwal konsultasi medis, kuota dokter, dan antrean pasien klinik.
+              </p>
+            </div>
+            <Link
+              href="/admin/bookings"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors self-start sm:self-auto"
+            >
+              <span>Kelola Seluruh Reservasi</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] text-zinc-400">Jadwal Hari Ini</span>
+              <div className="text-xl font-serif font-bold text-white">
+                {data.clinical.bookings_today}
+              </div>
+              <span className="text-[10px] text-zinc-500 block">Sesi aktif hari ini</span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] text-zinc-400">Booking Terkonfirmasi</span>
+              <div className="text-xl font-serif font-bold text-emerald-400">
+                {data.clinical.bookings_confirmed}
+              </div>
+              <span className="text-[10px] text-zinc-500 block">Siap dilayani</span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] text-zinc-400">Konsultasi Selesai</span>
+              <div className="text-xl font-serif font-bold text-teal-400">
+                {data.clinical.bookings_completed}
+              </div>
+              <span className="text-[10px] text-zinc-500 block">Rekam medis tuntas</span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800/80 space-y-1">
+              <span className="text-[11px] text-zinc-400">Total Pasien Terdaftar</span>
+              <div className="text-xl font-serif font-bold text-purple-400">
+                {data.clinical.total_patients}
+              </div>
+              <span className="text-[10px] text-zinc-500 block">+{data.clinical.new_patients_this_month} bulan ini</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 7-Day Revenue Trend Chart */}
       <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/90 border border-zinc-800 space-y-6">

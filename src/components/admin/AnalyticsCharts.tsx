@@ -30,7 +30,6 @@ export function TimeSeriesAreaChart({ data, height = 240 }: TimeSeriesAreaChartP
   }
 
   const maxRevenue = Math.max(...data.map((d) => d.revenue), 100000);
-  const maxOrders = Math.max(...data.map((d) => d.orders), 5);
 
   const paddingX = 40;
   const paddingY = 30;
@@ -284,7 +283,7 @@ export function HorizontalBreakdownList({
             </div>
             <div className="w-full h-2 rounded-full bg-stone-200 dark:bg-zinc-700/60 overflow-hidden">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-rose-500 to-pink-500 transition-all duration-500"
+                className="h-full rounded-full bg-linear-to-r from-rose-500 to-pink-500 transition-all duration-500"
                 style={{ width: `${Math.min(item.percentage, 100)}%` }}
               />
             </div>

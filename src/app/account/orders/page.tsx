@@ -28,6 +28,7 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     if (!isAuthHydrated) return;
 
     if (!user || !token) {
@@ -35,18 +36,23 @@ export default function OrdersPage() {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
     fetchOrders(token)
       .then((res) => {
+        if (!isMounted) return;
         setOrders(res.data);
+        setError(null);
+        setLoading(false);
       })
       .catch((err: unknown) => {
+        if (!isMounted) return;
         const msg = err instanceof Error ? err.message : 'Failed to load order history.';
         setError(msg);
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [isAuthHydrated, user, token, router]);
 
   const getStatusBadge = (status: string) => {
@@ -144,7 +150,7 @@ export default function OrdersPage() {
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 shadow-xs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 shadow-xs"
             >
               <Sparkles className="w-4 h-4" />
               <span>Explore Catalog</span>

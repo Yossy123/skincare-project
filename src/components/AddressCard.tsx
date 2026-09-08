@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Address } from '@/lib/api';
-import { MapPin, Phone, CheckCircle2, Edit3, Trash2, Tag } from 'lucide-react';
+import { MapPin, Phone, CheckCircle2, Edit3, Trash2 } from 'lucide-react';
 
 interface AddressCardProps {
   address: Address;
@@ -26,7 +26,7 @@ export function AddressCard({
     <div
       className={`relative p-5 sm:p-6 rounded-3xl border transition-all duration-200 ${
         address.is_default
-          ? 'bg-gradient-to-br from-rose-50/70 via-white to-pink-50/40 dark:from-rose-950/20 dark:via-zinc-900 dark:to-zinc-900 border-rose-300 dark:border-rose-900/60 shadow-md shadow-rose-950/5'
+          ? 'bg-linear-to-br from-rose-50/70 via-white to-pink-50/40 dark:from-rose-950/20 dark:via-zinc-900 dark:to-zinc-900 border-rose-300 dark:border-rose-900/60 shadow-md shadow-rose-950/5'
           : 'bg-white dark:bg-zinc-900 border-rose-100/80 dark:border-zinc-800 shadow-xs hover:border-rose-200 dark:hover:border-zinc-700'
       }`}
     >

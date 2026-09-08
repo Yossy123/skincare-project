@@ -135,7 +135,7 @@ export function OrderActionButtons({
           </button>
         )}
 
-        {order.payment && order.payment.status !== 'refunded' && ['PAID', 'PROCESSING', 'CANCELLED'].includes(currentStatus) && (
+        {process.env.NEXT_PUBLIC_MIDTRANS_ENABLED === 'true' && order.payment && order.payment.status !== 'refunded' && ['PAID', 'PROCESSING', 'CANCELLED'].includes(currentStatus) && (
           <button
             type="button"
             onClick={() => {

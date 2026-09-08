@@ -14,7 +14,7 @@ import {
 
 export function useAdminOrderDetail(orderId: number, token: string | null) {
   const [order, setOrder] = useState<AdminOrderDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(orderId && token));
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -39,24 +39,27 @@ export function useAdminOrderDetail(orderId: number, token: string | null) {
 
   useEffect(() => {
     let isMounted = true;
-    if (token && orderId) {
-      fetchAdminOrderDetail(orderId, token)
-        .then((data) => {
-          if (isMounted) {
-            setOrder(data);
-            setLoading(false);
-          }
-        })
-        .catch((err: unknown) => {
-          if (isMounted) {
-            const msg = err instanceof Error ? err.message : 'Failed to load order details';
-            setError(msg);
-            setLoading(false);
-          }
-        });
-    } else {
-      setLoading(false);
+    if (!token || !orderId) {
+      return;
     }
+
+    fetchAdminOrderDetail(orderId, token)
+      .then((data) => {
+        if (isMounted) {
+          setOrder(data);
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          const msg = err instanceof Error ? err.message : 'Failed to load order details';
+          setError(msg);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setLoading(false);
+        }
+      });
 
     return () => {
       isMounted = false;

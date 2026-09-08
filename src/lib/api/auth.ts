@@ -55,22 +55,33 @@ export async function registerUser(payload: RegisterPayload): Promise<AuthRespon
  * Login customer with email and password.
  */
 export async function loginUser(payload: LoginPayload): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-    cache: 'no-store',
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      cache: 'no-store',
+    });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Network error';
+    throw new Error(`Unable to connect to the authentication server (${errorMsg}). Please ensure the backend is running.`);
+  }
 
-  const data = await res.json();
+  let data: (AuthResponse & { errors?: Record<string, string[]>; message?: string }) | null = null;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error(`Unexpected response from server (HTTP ${res.status}).`);
+  }
 
-  if (!res.ok) {
-    const errorMsg = data.errors
+  if (!res.ok || !data) {
+    const errorMsg = data?.errors
       ? Object.values(data.errors).flat().join(' ')
-      : data.message || 'Login failed';
+      : data?.message || `Login failed (HTTP ${res.status})`;
     throw new Error(errorMsg);
   }
 
@@ -81,14 +92,18 @@ export async function loginUser(payload: LoginPayload): Promise<AuthResponse> {
  * Logout customer and revoke access token.
  */
 export async function logoutUser(token: string): Promise<void> {
-  await fetch(`${API_BASE_URL}/auth/logout`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    cache: 'no-store',
-  });
+  try {
+    await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      cache: 'no-store',
+    });
+  } catch {
+    // Gracefully handle logout failure
+  }
 }
 
 /**
@@ -110,3 +125,4 @@ export async function fetchMe(token: string): Promise<User> {
   const json = await res.json();
   return json.user;
 }
+

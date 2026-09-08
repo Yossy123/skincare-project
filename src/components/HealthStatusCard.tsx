@@ -40,7 +40,10 @@ export function HealthStatusCard() {
         <button
           onClick={() => checkBackendHealth()}
           disabled={healthState === 'loading'}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm shadow-rose-500/20 transition-all active:scale-95 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white
+            bg-linear-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700
+            rounded-xl shadow-sm shadow-rose-500/20 transition-all active:scale-95
+            cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw className={`w-4 h-4 ${healthState === 'loading' ? 'animate-spin' : ''}`} />
           {healthState === 'loading' ? 'Checking...' : 'Ping /api/health'}

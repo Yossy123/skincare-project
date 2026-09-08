@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/lib/api';
 import { useCartStore } from '@/store/useCartStore';
-import { Sparkles, Eye, Plus, ShoppingBag } from 'lucide-react';
+import { ProductImage } from '@/components/ProductImage';
+import { Sparkles, Eye, ShoppingBag, Check } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -13,14 +14,15 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const isOutOfStock = product.stock <= 0;
   const isLowStock = product.stock > 0 && product.stock <= 10;
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
+  const [isAdded, setIsAdded] = useState(false);
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (isOutOfStock) return;
 
-    addItem({
+    const success = addItem({
       productId: product.id,
       name: product.name,
       slug: product.slug,
@@ -29,6 +31,12 @@ export function ProductCard({ product }: ProductCardProps) {
       weight: product.weight,
       stock: product.stock,
     }, 1);
+
+    if (success) {
+      setIsAdded(true);
+      setTimeout(() => setIsAdded(false), 1500);
+      openCart();
+    }
   };
 
   // Beauty placeholder gradient if image is not uploaded yet
@@ -50,6 +58,13 @@ export function ProductCard({ product }: ProductCardProps) {
         href={`/products/${product.slug}`}
         className={`relative w-full aspect-square bg-gradient-to-br ${bgGradient} flex items-center justify-center p-6 overflow-hidden`}
       >
+        {/* Real product photo (falls back to the placeholder beneath on error) */}
+        <ProductImage
+          image={product.image}
+          alt={product.name}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+
         {/* Decorative cosmetic icon & bottle silhouette */}
         <div className="flex flex-col items-center justify-center text-center p-4 transition-transform duration-500 group-hover:scale-105">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md shadow-md flex items-center justify-center text-rose-500 mb-2 border border-rose-100/60 dark:border-zinc-700">
@@ -117,11 +132,19 @@ export function ProductCard({ product }: ProductCardProps) {
             <button
               onClick={handleQuickAdd}
               disabled={isOutOfStock}
-              className="p-2 rounded-xl text-white bg-rose-500 hover:bg-rose-600 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs transition-colors cursor-pointer"
-              title="Add 1 to bag"
+              className={`p-2 rounded-xl text-white transition-all duration-300 shadow-xs cursor-pointer ${
+                isAdded
+                  ? 'bg-emerald-500 scale-110 shadow-emerald-500/30'
+                  : 'bg-rose-500 hover:bg-rose-600 hover:scale-105 active:scale-95 shadow-rose-500/20'
+              } disabled:opacity-40 disabled:cursor-not-allowed`}
+              title={isAdded ? 'Added to bag!' : 'Add 1 to bag'}
               aria-label="Add to cart"
             >
-              <ShoppingBag className="w-3.5 h-3.5" />
+              {isAdded ? (
+                <Check className="w-3.5 h-3.5 animate-in zoom-in spin-in-90 duration-200" />
+              ) : (
+                <ShoppingBag className="w-3.5 h-3.5" />
+              )}
             </button>
             <Link
               href={`/products/${product.slug}`}

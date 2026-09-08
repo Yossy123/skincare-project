@@ -6,23 +6,25 @@ import { usePathname } from 'next/navigation';
 import { useCartStore, useCartHydrated } from '@/store/useCartStore';
 import { useAuthStore, useAuthHydrated } from '@/store/useAuthStore';
 import { CartDrawer } from '@/components/CartDrawer';
+import { OnlineConsultationModal } from '@/components/OnlineConsultationModal';
 import {
   ShoppingBag,
   Search,
   Menu,
   X,
   Sparkles,
-  User as UserIcon,
   LogOut,
   ChevronDown,
   MapPin,
   Package,
+  MessageCircle,
 } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
 
   // Cart state
   const isCartHydrated = useCartHydrated();
@@ -37,9 +39,8 @@ export function Navbar() {
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Shop All', href: '/products' },
-    { name: 'Skincare', href: '/categories/skincare' },
-    { name: 'Makeup', href: '/categories/makeup' },
-    { name: 'Fragrance', href: '/categories/fragrance' },
+    { name: 'Specialists', href: '/specialists' },
+    { name: 'Booking', href: '/booking' },
   ];
 
   const handleLogout = async () => {
@@ -55,11 +56,11 @@ export function Navbar() {
             {/* Brand Logo */}
             <div className="flex items-center gap-3">
               <Link href="/" className="flex items-center gap-2.5 group">
-                <span className="w-9 h-9 rounded-full bg-gradient-to-tr from-rose-500 to-pink-400 flex items-center justify-center text-white shadow-sm shadow-rose-500/30 font-serif font-bold text-base transition-transform group-hover:scale-105">
+                <span className="w-9 h-9 rounded-full bg-linear-to-tr from-rose-500 to-pink-400 flex items-center justify-center text-white shadow-sm shadow-rose-500/30 font-serif font-bold text-base transition-transform group-hover:scale-105">
                   L
                 </span>
                 <div className="flex flex-col">
-                  <span className="font-serif tracking-widest text-lg sm:text-xl font-semibold bg-gradient-to-r from-zinc-900 via-rose-950 to-zinc-800 dark:from-zinc-100 dark:via-rose-200 dark:to-zinc-300 bg-clip-text text-transparent">
+                  <span className="font-serif tracking-widest text-lg sm:text-xl font-semibold bg-linear-to-r from-zinc-900 via-rose-950 to-zinc-800 dark:from-zinc-100 dark:via-rose-200 dark:to-zinc-300 bg-clip-text text-transparent">
                     LUMIÈRE
                   </span>
                   <span className="text-[9px] tracking-[0.25em] uppercase text-rose-500 font-semibold -mt-1">
@@ -87,6 +88,17 @@ export function Navbar() {
                   </Link>
                 );
               })}
+
+              {/* Konsultasi Online Trigger Button in Nav */}
+              <button
+                type="button"
+                onClick={() => setIsConsultationModalOpen(true)}
+                className="inline-flex items-center gap-1.5 ml-1 px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 shadow-xs transition-all cursor-pointer hover:scale-105"
+                title="Konsultasi Online Dokter via WhatsApp"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-100 dark:fill-emerald-950" />
+                <span>Konsultasi Online</span>
+              </button>
             </nav>
 
             {/* Actions & Utilities */}
@@ -109,7 +121,7 @@ export function Navbar() {
                     <span className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-[10px]">
                       {user.name.charAt(0).toUpperCase()}
                     </span>
-                    <span className="max-w-[100px] truncate hidden sm:inline">{user.name.split(' ')[0]}</span>
+                    <span className="max-w-25 truncate hidden sm:inline">{user.name.split(' ')[0]}</span>
                     <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                   </button>
 
@@ -144,9 +156,29 @@ export function Navbar() {
                         <Package className="w-3.5 h-3.5 text-rose-500" />
                         <span>My Orders</span>
                       </Link>
+                      {user.role === 'doctor' && (
+                        <Link
+                          href="/doctor/dashboard"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-emerald-600 dark:text-emerald-400 font-semibold hover:bg-emerald-50 dark:hover:bg-zinc-800"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Doctor Portal</span>
+                        </Link>
+                      )}
+                      {user.role === 'admin' && (
+                        <Link
+                          href="/admin/dashboard"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 rounded-xl text-rose-600 dark:text-rose-400 font-semibold hover:bg-rose-50 dark:hover:bg-zinc-800"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Admin Portal</span>
+                        </Link>
+                      )}
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-800 text-left cursor-pointer"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 text-left cursor-pointer"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                         <span>Sign Out</span>
@@ -155,34 +187,43 @@ export function Navbar() {
                   )}
                 </div>
               ) : (
-                <Link
-                  href="/login"
-                  className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:text-rose-600 bg-white dark:bg-zinc-900 border border-rose-100 dark:border-zinc-800 hover:border-rose-300 transition-all shadow-2xs"
-                >
-                  <UserIcon className="w-3.5 h-3.5 text-rose-500" />
-                  <span>Sign In</span>
-                </Link>
+                <div className="hidden sm:flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 rounded-full text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:text-rose-600 hover:bg-rose-50/50 dark:hover:bg-zinc-900 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="px-4 py-2 rounded-full text-xs font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-xs transition-all"
+                  >
+                    Register
+                  </Link>
+                </div>
               )}
 
-              {/* Cart Drawer Trigger */}
+              {/* Shopping Bag Button with Animated Badge */}
               <button
                 onClick={toggleCart}
-                className="relative p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
-                title="Open Shopping Bag"
-                aria-label={`Shopping Bag (${cartItemCount} items)`}
+                className="relative p-2 rounded-full text-zinc-700 dark:text-zinc-200 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
+                aria-label="View Shopping Bag"
               >
                 <ShoppingBag className="w-5 h-5" />
                 {cartItemCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-xs animate-in zoom-in duration-200">
+                  <span
+                    key={cartItemCount}
+                    className="absolute -top-1 -right-1 bg-linear-to-tr from-rose-600 to-pink-500 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center shadow-xs animate-cart-bounce"
+                  >
                     {cartItemCount > 99 ? '99+' : cartItemCount}
                   </span>
                 )}
               </button>
 
-              {/* Mobile Menu Button */}
+              {/* Mobile Menu Trigger */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-rose-50 dark:hover:bg-zinc-900 transition-colors"
+                className="md:hidden p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-zinc-900"
                 aria-label="Toggle navigation menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -209,6 +250,19 @@ export function Navbar() {
               </Link>
             ))}
 
+            {/* Mobile Konsultasi Online Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setIsConsultationModalOpen(true);
+              }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-600" />
+              <span>Konsultasi Online via WhatsApp</span>
+            </button>
+
             <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
               {isAuthenticated && user ? (
                 <div className="space-y-2">
@@ -232,6 +286,26 @@ export function Navbar() {
                     <MapPin className="w-4 h-4 text-rose-500" />
                     <span>Manage Addresses</span>
                   </Link>
+                  {user.role === 'doctor' && (
+                    <Link
+                      href="/doctor/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 rounded-xl"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>Doctor Portal</span>
+                    </Link>
+                  )}
+                  {user.role === 'admin' && (
+                    <Link
+                      href="/admin/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 rounded-xl"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>Admin Portal</span>
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 pt-1">
@@ -245,7 +319,7 @@ export function Navbar() {
                   <Link
                     href="/register"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="text-center py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-xs font-semibold text-white shadow-xs"
+                    className="text-center py-2.5 rounded-xl bg-linear-to-r from-rose-500 to-pink-500 text-xs font-semibold text-white shadow-xs"
                   >
                     Register
                   </Link>
@@ -258,6 +332,12 @@ export function Navbar() {
 
       {/* Cart Slide-over Drawer Component */}
       <CartDrawer />
+
+      {/* Online Consultation WhatsApp Modal Component */}
+      <OnlineConsultationModal
+        isOpen={isConsultationModalOpen}
+        onClose={() => setIsConsultationModalOpen(false)}
+      />
     </>
   );
 }

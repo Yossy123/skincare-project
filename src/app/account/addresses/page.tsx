@@ -20,8 +20,6 @@ import {
   MapPin,
   Plus,
   ChevronRight,
-  Sparkles,
-  ArrowLeft,
   AlertCircle,
 } from 'lucide-react';
 
@@ -40,9 +38,9 @@ export default function AddressesPage() {
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
   // Load addresses callback
-  const loadAddresses = useCallback(async () => {
+  const loadAddresses = useCallback(async (showLoading = false) => {
     if (!token) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
     setError(null);
     try {
       const data = await fetchAddresses(token);
@@ -57,6 +55,7 @@ export default function AddressesPage() {
 
   // Auth protection & initial load
   useEffect(() => {
+    let isMounted = true;
     if (!isAuthHydrated) return;
 
     if (!user || !token) {
@@ -64,8 +63,24 @@ export default function AddressesPage() {
       return;
     }
 
-    loadAddresses();
-  }, [isAuthHydrated, user, token, router, loadAddresses]);
+    fetchAddresses(token)
+      .then((data) => {
+        if (!isMounted) return;
+        setAddresses(data);
+        setError(null);
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        if (!isMounted) return;
+        const msg = err instanceof Error ? err.message : 'Failed to load addresses';
+        setError(msg);
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthHydrated, user, token, router]);
 
   // Handle Create or Update save
   const handleSaveAddress = async (payload: AddressPayload, addressId?: number) => {
@@ -168,7 +183,7 @@ export default function AddressesPage() {
 
           <button
             onClick={openCreateModal}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 transition-all cursor-pointer shrink-0"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Add New Address</span>
@@ -203,7 +218,7 @@ export default function AddressesPage() {
             </p>
             <button
               onClick={openCreateModal}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 shadow-xs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 shadow-xs"
             >
               <Plus className="w-4 h-4" />
               <span>Add Your First Address</span>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Address } from '@/lib/api';
-import { MapPin, CheckCircle2, Plus, Tag } from 'lucide-react';
+import { CheckCircle2, Plus } from 'lucide-react';
 
 interface AddressSelectorProps {
   addresses: Address[];

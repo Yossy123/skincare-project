@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, use } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import {
   fetchAdminCustomerDetail,
@@ -13,19 +12,13 @@ import {
   ArrowLeft,
   User,
   ShoppingBag,
-  CreditCard,
   MapPin,
-  Calendar,
   AlertTriangle,
   CheckCircle2,
   Power,
-  RefreshCw,
   ExternalLink,
   History,
   ShieldAlert,
-  X,
-  TrendingUp,
-  XCircle,
 } from 'lucide-react';
 
 interface PageProps {
@@ -36,7 +29,6 @@ export default function AdminCustomerDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const customerId = Number(resolvedParams.id);
 
-  const router = useRouter();
   const { token } = useAuthStore();
 
   const [data, setData] = useState<AdminCustomerDetailResponse | null>(null);
@@ -50,24 +42,28 @@ export default function AdminCustomerDetailPage({ params }: PageProps) {
   const [toggleReason, setToggleReason] = useState('');
   const [toggleNote, setToggleNote] = useState('');
 
-  const loadCustomer = useCallback(async () => {
-    if (!token || !customerId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetchAdminCustomerDetail(customerId, token);
-      setData(res);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to load customer profile';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, [token, customerId]);
-
   useEffect(() => {
-    loadCustomer();
-  }, [loadCustomer]);
+    let isMounted = true;
+    if (token && customerId) {
+      fetchAdminCustomerDetail(customerId, token)
+        .then((res) => {
+          if (!isMounted) return;
+          setData(res);
+          setError(null);
+          setLoading(false);
+        })
+        .catch((err: unknown) => {
+          if (!isMounted) return;
+          const msg = err instanceof Error ? err.message : 'Failed to load customer profile';
+          setError(msg);
+          setLoading(false);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token, customerId]);
 
   const handleToggleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -14,13 +14,16 @@ import {
   EyeOff,
   ArrowRight,
   AlertCircle,
-  CheckCircle2,
 } from 'lucide-react';
 
 function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('redirect') || '/';
+  const rawRedirect = searchParams.get('redirect');
+  const redirectUrl =
+    rawRedirect && !rawRedirect.startsWith('/login') && !rawRedirect.startsWith('/register')
+      ? rawRedirect
+      : '/';
 
   const isHydrated = useAuthHydrated();
   const { user, login, loading, error, clearError } = useAuthStore();
@@ -33,7 +36,13 @@ function LoginFormContent() {
   // If already logged in, redirect
   useEffect(() => {
     if (isHydrated && user) {
-      router.push(redirectUrl);
+      if (user.role === 'admin') {
+        router.push(redirectUrl && redirectUrl !== '/' ? redirectUrl : '/admin/dashboard');
+      } else if (user.role === 'doctor') {
+        router.push(redirectUrl && redirectUrl !== '/' ? redirectUrl : '/doctor/dashboard');
+      } else {
+        router.push(redirectUrl);
+      }
     }
   }, [isHydrated, user, router, redirectUrl]);
 
@@ -47,10 +56,24 @@ function LoginFormContent() {
       return;
     }
 
-    const success = await login({ email, password });
+    const success = await login({ email: email.trim(), password });
     if (success) {
-      router.push(redirectUrl);
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser?.role === 'admin') {
+        router.push(redirectUrl && redirectUrl !== '/' ? redirectUrl : '/admin/dashboard');
+      } else if (currentUser?.role === 'doctor') {
+        router.push(redirectUrl && redirectUrl !== '/' ? redirectUrl : '/doctor/dashboard');
+      } else {
+        router.push(redirectUrl);
+      }
     }
+  };
+
+  const handleFillDemo = (demoEmail: string, demoPass: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPass);
+    setValidationError(null);
+    clearError();
   };
 
   return (
@@ -96,8 +119,8 @@ function LoginFormContent() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full pl-10 pr-4 py-3 text-xs sm:text-sm rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-rose-100 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-400"
+                placeholder="customer@lumiere.com"
+                className="w-full pl-10 pr-4 py-3 text-xs sm:text-sm rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-rose-100 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-400"
               />
             </div>
           </div>
@@ -122,7 +145,7 @@ function LoginFormContent() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-10 py-3 text-xs sm:text-sm rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-rose-100 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-400"
+                className="w-full pl-10 pr-10 py-3 text-xs sm:text-sm rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-rose-100 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-400"
               />
               <button
                 type="button"
@@ -139,7 +162,7 @@ function LoginFormContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 disabled:opacity-50 shadow-md shadow-rose-500/20 transition-all cursor-pointer"
+            className="w-full mt-2 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 disabled:opacity-50 shadow-md shadow-rose-500/20 transition-all cursor-pointer active:scale-[0.99]"
           >
             {loading ? (
               <span>Signing in...</span>
@@ -152,11 +175,38 @@ function LoginFormContent() {
           </button>
         </form>
 
-        {/* Demo Credentials Helper */}
-        <div className="mt-6 p-3 rounded-xl bg-stone-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 text-[11px] text-zinc-500 space-y-1">
-          <div className="font-semibold text-zinc-700 dark:text-zinc-300">Demo Customer Account:</div>
-          <div>Email: <code className="text-rose-600 dark:text-rose-300 font-mono">customer@lumiere.com</code></div>
-          <div>Password: <code className="text-rose-600 dark:text-rose-300 font-mono">password</code></div>
+        {/* Demo Credentials Quick Fill */}
+        <div className="mt-6 p-3.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 text-[11px] text-zinc-500 space-y-2">
+          <div className="font-semibold text-zinc-700 dark:text-zinc-300 flex items-center justify-between">
+            <span>Quick Demo Accounts:</span>
+            <span className="text-[10px] text-zinc-400 font-normal">Click to auto-fill</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => handleFillDemo('customer@lumiere.com', 'password')}
+              className="px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-rose-100 dark:border-zinc-700 hover:border-rose-300 text-left transition-colors cursor-pointer"
+            >
+              <div className="font-semibold text-rose-600 dark:text-rose-400 text-xs">Customer</div>
+              <div className="text-[9px] text-zinc-400 truncate">customer@...</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFillDemo('doctor.yoshi@lumiere.com', 'password')}
+              className="px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-emerald-100 dark:border-zinc-700 hover:border-emerald-400 text-left transition-colors cursor-pointer"
+            >
+              <div className="font-semibold text-emerald-600 dark:text-emerald-400 text-xs">Dokter</div>
+              <div className="text-[9px] text-zinc-400 truncate">doctor.yoshi@...</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleFillDemo('admin@lumiere.com', 'password')}
+              className="px-2 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-rose-100 dark:border-zinc-700 hover:border-rose-300 text-left transition-colors cursor-pointer"
+            >
+              <div className="font-semibold text-zinc-700 dark:text-zinc-300 text-xs">Admin</div>
+              <div className="text-[9px] text-zinc-400 truncate">admin@...</div>
+            </button>
+          </div>
         </div>
 
         {/* Register Link */}

@@ -29,14 +29,9 @@ import {
   Users,
   CreditCard,
   Truck,
-  Calendar,
   RefreshCw,
-  TrendingUp,
   AlertCircle,
   CheckCircle2,
-  Clock,
-  Sparkles,
-  ArrowUpRight,
 } from 'lucide-react';
 
 type TabKey = 'sales' | 'orders' | 'products' | 'customers' | 'payments' | 'shipping';
@@ -61,9 +56,9 @@ export default function AdminAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadTabData = useCallback(async () => {
+  const loadTabData = useCallback(async (showLoading = false) => {
     if (!token) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
     setError(null);
 
     try {
@@ -95,8 +90,42 @@ export default function AdminAnalyticsPage() {
   }, [activeTab, period, token]);
 
   useEffect(() => {
-    loadTabData();
-  }, [loadTabData]);
+    let isMounted = true;
+    if (!token) return;
+
+    const fetchPromise = (() => {
+      if (activeTab === 'sales') return fetchSalesAnalytics({ period }, token);
+      if (activeTab === 'orders') return fetchOrderAnalytics({ period }, token);
+      if (activeTab === 'products') return fetchProductAnalytics({ period }, token);
+      if (activeTab === 'customers') return fetchCustomerAnalytics({ period }, token);
+      if (activeTab === 'payments') return fetchPaymentAnalytics({ period }, token);
+      if (activeTab === 'shipping') return fetchShippingAnalytics({ period }, token);
+      return Promise.resolve(null);
+    })();
+
+    fetchPromise
+      .then((res) => {
+        if (!isMounted || !res) return;
+        if (activeTab === 'sales') setSalesData(res as SalesAnalyticsResponse);
+        else if (activeTab === 'orders') setOrdersData(res as OrderAnalyticsResponse);
+        else if (activeTab === 'products') setProductsData(res as ProductAnalyticsResponse);
+        else if (activeTab === 'customers') setCustomersData(res as CustomerAnalyticsResponse);
+        else if (activeTab === 'payments') setPaymentsData(res as PaymentAnalyticsResponse);
+        else if (activeTab === 'shipping') setShippingData(res as ShippingAnalyticsResponse);
+        setError(null);
+        setLoading(false);
+      })
+      .catch((err: unknown) => {
+        if (!isMounted) return;
+        const msg = err instanceof Error ? err.message : 'Failed to fetch analytics data';
+        setError(msg);
+        setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeTab, period, token]);
 
   const handleTabChange = (tab: TabKey) => {
     setActiveTab(tab);
@@ -145,7 +174,7 @@ export default function AdminAnalyticsPage() {
 
           <button
             type="button"
-            onClick={loadTabData}
+            onClick={() => loadTabData(true)}
             disabled={loading}
             className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all cursor-pointer disabled:opacity-50"
             title="Refresh Data"

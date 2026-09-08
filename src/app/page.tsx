@@ -8,7 +8,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { CatalogSkeleton } from '@/components/CatalogSkeleton';
 import { HealthStatusCard } from '@/components/HealthStatusCard';
 import { fetchCategories, fetchProducts, Category, Product } from '@/lib/api';
-import { Sparkles, ArrowRight, Star, ShieldCheck, Heart } from 'lucide-react';
+import { Sparkles, ArrowRight, Star, ShieldCheck } from 'lucide-react';
 
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -43,7 +43,7 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-rose-100/60 via-pink-50/40 to-stone-50/60 dark:from-rose-950/30 dark:via-zinc-900 dark:to-zinc-950 py-16 sm:py-24 border-b border-rose-100/60 dark:border-zinc-800">
+        <section className="relative overflow-hidden bg-linear-to-b from-rose-100/60 via-pink-50/40 to-stone-50/60 dark:from-rose-950/30 dark:via-zinc-900 dark:to-zinc-950 py-16 sm:py-24 border-b border-rose-100/60 dark:border-zinc-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-rose-200/80 dark:border-zinc-700 text-rose-700 dark:text-rose-300 text-xs font-semibold mb-6 shadow-xs">
@@ -62,7 +62,7 @@ export default function HomePage() {
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>Explore Catalog</span>
                   <ArrowRight className="w-4 h-4" />
@@ -91,7 +91,7 @@ export default function HomePage() {
           </div>
 
           {/* Decorative Glow Circle */}
-          <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-rose-200/40 via-pink-200/30 to-amber-100/30 dark:from-rose-900/20 dark:via-pink-900/10 dark:to-transparent blur-3xl pointer-events-none rounded-full"></div>
+          <div className="absolute top-1/2 right-0 -translate-y-1/2 w-125 h-125 bg-linear-to-br from-rose-200/40 via-pink-200/30 to-amber-100/30 dark:from-rose-900/20 dark:via-pink-900/10 dark:to-transparent blur-3xl pointer-events-none rounded-full"></div>
         </section>
 
         {/* Categories Grid Showcase */}

@@ -10,7 +10,7 @@ export function Footer() {
         {/* Brand Info */}
         <div className="space-y-3 md:col-span-1">
           <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-full bg-gradient-to-tr from-rose-500 to-pink-400 flex items-center justify-center text-white font-serif font-bold text-xs">
+            <span className="w-7 h-7 rounded-full bg-linear-to-tr from-rose-500 to-pink-400 flex items-center justify-center text-white font-serif font-bold text-xs">
               L
             </span>
             <span className="font-serif tracking-widest text-base font-semibold text-zinc-900 dark:text-zinc-100">

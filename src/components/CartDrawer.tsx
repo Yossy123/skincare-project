@@ -117,7 +117,7 @@ export function CartDrawer() {
                 <Link
                   href="/products"
                   onClick={closeCart}
-                  className="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-xs"
+                  className="px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-xs"
                 >
                   Explore Catalog
                 </Link>
@@ -125,12 +125,12 @@ export function CartDrawer() {
             ) : (
               <div className="space-y-4 divide-y divide-rose-50 dark:divide-zinc-800/80">
                 {items.map((item) => (
-                  <div key={item.productId} className="pt-4 first:pt-0 flex gap-3.5">
+                  <div key={item.productId} className="pt-4 flex gap-3.5">
                     {/* Thumbnail */}
                     <Link
                       href={`/products/${item.slug}`}
                       onClick={closeCart}
-                      className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-rose-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-800/60 border border-rose-100/80 dark:border-zinc-700 flex items-center justify-center shrink-0 overflow-hidden"
+                      className="relative w-16 h-16 rounded-xl bg-linear-to-br from-rose-50 to-pink-50 dark:from-zinc-800 dark:to-zinc-800/60 border border-rose-100/80 dark:border-zinc-700 flex items-center justify-center shrink-0 overflow-hidden"
                     >
                       <ProductImage
                         image={item.image}
@@ -235,7 +235,7 @@ export function CartDrawer() {
                 <Link
                   href="/cart"
                   onClick={closeCart}
-                  className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 transition-all text-center"
+                  className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl text-xs sm:text-sm font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 transition-all text-center"
                 >
                   <span>View Shopping Bag</span>
                   <ArrowRight className="w-4 h-4" />

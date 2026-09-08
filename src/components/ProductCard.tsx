@@ -55,7 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Product Image / Visual Showcase */}
       <Link
         href={`/products/${product.slug}`}
-        className={`relative w-full aspect-square bg-gradient-to-br ${bgGradient} flex items-center justify-center p-6 overflow-hidden`}
+        className={`relative w-full aspect-square bg-linear-to-br ${bgGradient} flex items-center justify-center p-6 overflow-hidden`}
       >
         {/* Real product photo (falls back to the placeholder beneath on error) */}
         <ProductImage
@@ -69,7 +69,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md shadow-md flex items-center justify-center text-rose-500 mb-2 border border-rose-100/60 dark:border-zinc-700">
             <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-rose-400" />
           </div>
-          <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 max-w-[140px] truncate">
+          <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 max-w-35 truncate">
             {product.category?.name || 'Cosmetics'}
           </span>
         </div>

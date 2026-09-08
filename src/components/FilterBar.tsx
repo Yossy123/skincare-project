@@ -41,7 +41,7 @@ export function FilterBar({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search serums, creams, lip tints, cleansers..."
-            className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-rose-100 dark:border-zinc-700 focus:outline-hidden focus:ring-2 focus:ring-rose-400 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400"
+            className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-rose-100 dark:border-zinc-700 focus:outline-hidden focus:ring-2 focus:ring-rose-400 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400"
           />
           {searchQuery && (
             <button
@@ -86,7 +86,7 @@ export function FilterBar({
           onClick={() => onSelectCategory('')}
           className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
             !selectedCategory
-              ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-xs shadow-rose-500/20 font-semibold'
+              ? 'bg-linear-to-r from-rose-500 to-pink-500 text-white shadow-xs shadow-rose-500/20 font-semibold'
               : 'bg-stone-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-rose-50 dark:hover:bg-zinc-700 border border-rose-100/60 dark:border-zinc-700'
           }`}
         >
@@ -99,7 +99,7 @@ export function FilterBar({
             onClick={() => onSelectCategory(cat.slug)}
             className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all shrink-0 cursor-pointer ${
               selectedCategory === cat.slug
-                ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-xs shadow-rose-500/20 font-semibold'
+                ? 'bg-linear-to-r from-rose-500 to-pink-500 text-white shadow-xs shadow-rose-500/20 font-semibold'
                 : 'bg-stone-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-rose-50 dark:hover:bg-zinc-700 border border-rose-100/60 dark:border-zinc-700'
             }`}
           >

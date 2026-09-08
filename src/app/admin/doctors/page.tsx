@@ -356,7 +356,7 @@ export default function AdminDoctorsPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. dr. Sarah Amanda Sp.D.V.E"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
                 <div>
@@ -367,7 +367,7 @@ export default function AdminDoctorsPage() {
                     value={specialization}
                     onChange={(e) => setSpecialization(e.target.value)}
                     placeholder="e.g. Dermatologi & Laser"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
               </div>
@@ -386,7 +386,7 @@ export default function AdminDoctorsPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="doctor.name@lumiere.com"
-                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                     />
                   </div>
                   <div>
@@ -397,7 +397,7 @@ export default function AdminDoctorsPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Minimal 6 karakter"
-                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                      className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                     />
                   </div>
                 </div>
@@ -411,7 +411,7 @@ export default function AdminDoctorsPage() {
                     value={licenseNumber}
                     onChange={(e) => setLicenseNumber(e.target.value)}
                     placeholder="SIP.440/123/Dinkes"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
                 <div>
@@ -421,7 +421,7 @@ export default function AdminDoctorsPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="08123456789"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
               </div>
@@ -435,7 +435,7 @@ export default function AdminDoctorsPage() {
                     value={scheduleDays}
                     onChange={(e) => setScheduleDays(e.target.value)}
                     placeholder="Senin – Jumat"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
                 <div>
@@ -444,7 +444,7 @@ export default function AdminDoctorsPage() {
                     type="time"
                     value={workStartTime}
                     onChange={(e) => setWorkStartTime(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
                 <div>
@@ -453,7 +453,7 @@ export default function AdminDoctorsPage() {
                     type="time"
                     value={workEndTime}
                     onChange={(e) => setWorkEndTime(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
               </div>
@@ -465,7 +465,7 @@ export default function AdminDoctorsPage() {
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Fokus keahlian, pendekatan klinis, dan pengalaman..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                 />
               </div>
             </div>
@@ -517,7 +517,7 @@ export default function AdminDoctorsPage() {
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
                 <div>
@@ -527,7 +527,7 @@ export default function AdminDoctorsPage() {
                     required
                     value={specialization}
                     onChange={(e) => setSpecialization(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
               </div>
@@ -539,7 +539,7 @@ export default function AdminDoctorsPage() {
                     type="text"
                     value={scheduleDays}
                     onChange={(e) => setScheduleDays(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
                 <div>
@@ -548,7 +548,7 @@ export default function AdminDoctorsPage() {
                     type="time"
                     value={workStartTime}
                     onChange={(e) => setWorkStartTime(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
                 <div>
@@ -557,7 +557,7 @@ export default function AdminDoctorsPage() {
                     type="time"
                     value={workEndTime}
                     onChange={(e) => setWorkEndTime(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                   />
                 </div>
               </div>
@@ -568,7 +568,7 @@ export default function AdminDoctorsPage() {
                   type="text"
                   value={licenseNumber}
                   onChange={(e) => setLicenseNumber(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                 />
               </div>
 
@@ -578,7 +578,7 @@ export default function AdminDoctorsPage() {
                   rows={3}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:border-rose-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                 />
               </div>
             </div>

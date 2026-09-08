@@ -2,10 +2,12 @@
 
 namespace App\Services\Orders;
 
+use App\Contracts\ShippingProviderInterface;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class OrderCancellationService
@@ -25,7 +27,8 @@ class OrderCancellationService
 
     public function __construct(
         protected OrderAuditService $auditService,
-        protected AdminOrderQueryService $queryService
+        protected AdminOrderQueryService $queryService,
+        protected ShippingProviderInterface $shippingProvider
     ) {}
 
     /**
@@ -53,7 +56,7 @@ class OrderCancellationService
             ]);
         }
 
-        return DB::transaction(function () use ($orderId, $admin, $reason, $note) {
+        $order = DB::transaction(function () use ($orderId, $admin, $reason, $note) {
             /** @var Order $order */
             $order = Order::with('orderItems')->where('id', $orderId)->lockForUpdate()->firstOrFail();
 
@@ -99,7 +102,58 @@ class OrderCancellationService
                 ]
             );
 
-            return $this->queryService->getOrderDetail($order->id);
+            return $order;
         });
+
+        $this->cancelExternalShipment($order, $reason);
+
+        return $this->queryService->getOrderDetail($order->id);
+    }
+
+    /**
+     * Best-effort cancellation of the courier booking after a local order cancellation.
+     * A courier-side failure must never roll back the local cancellation; the webhook
+     * remains the source of truth for shipment telemetry in that case.
+     */
+    protected function cancelExternalShipment(Order $order, string $reason): void
+    {
+        $shipment = $order->shipment()->first();
+
+        if (! $shipment) {
+            return;
+        }
+
+        $biteshipOrderId = (string) ($shipment->biteship_order_id ?? '');
+
+        if ($biteshipOrderId !== '') {
+            try {
+                $result = $this->shippingProvider->cancelShipment($biteshipOrderId, 'others');
+
+                if (! ($result['success'] ?? false)) {
+                    Log::warning('Courier shipment cancellation failed after order cancellation; shipment left to webhook telemetry.', [
+                        'order_id' => $order->id,
+                        'biteship_order_id' => $biteshipOrderId,
+                        'message' => $result['message'] ?? null,
+                    ]);
+
+                    return;
+                }
+
+                Log::info('Courier shipment cancelled following order cancellation.', [
+                    'order_id' => $order->id,
+                    'biteship_order_id' => $biteshipOrderId,
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Courier shipment cancellation error after order cancellation.', [
+                    'order_id' => $order->id,
+                    'biteship_order_id' => $biteshipOrderId,
+                    'message' => $e->getMessage(),
+                ]);
+
+                return;
+            }
+        }
+
+        $shipment->update(['status' => 'cancelled']);
     }
 }

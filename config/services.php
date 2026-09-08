@@ -44,6 +44,7 @@ return [
         'origin_contact_name' => env('BITESHIP_ORIGIN_CONTACT_NAME', 'Lumiere Beaute Store'),
         'origin_contact_phone' => env('BITESHIP_ORIGIN_CONTACT_PHONE', '081234567890'),
         'timeout' => (int) env('BITESHIP_TIMEOUT', 10),
+        'free_shipping_min_spend' => (float) env('SHIPPING_FREE_MIN_SPEND', 500000),
         'webhook_signature_key' => env('BITESHIP_WEBHOOK_SIGNATURE_KEY', 'X-Biteship-Signature'),
         'webhook_secret' => env('BITESHIP_WEBHOOK_SECRET', ''),
     ],

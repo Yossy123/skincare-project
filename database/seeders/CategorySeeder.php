@@ -26,12 +26,6 @@ class CategorySeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'name' => 'Fragrance',
-                'slug' => 'fragrance',
-                'description' => 'Artisanal perfumes, delicate floral mists, and warm amber eau de parfum collections.',
-                'is_active' => true,
-            ],
-            [
                 'name' => 'Body Care',
                 'slug' => 'body-care',
                 'description' => 'Botanical body oils, smoothing scrubs, and intensely nourishing body butters.',

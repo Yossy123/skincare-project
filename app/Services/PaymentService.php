@@ -59,8 +59,13 @@ class PaymentService
             'name' => 'Shipping',
         ];
 
+        // Midtrans order ids are globally unique per merchant account and can never be
+        // reused — even after a local database reset. Suffix a timestamp so every
+        // payment attempt gets a fresh, collision-free Snap transaction.
+        $midtransOrderId = 'ORDER-'.$order->id.'-'.now()->getTimestamp();
+
         $result = $this->midtrans->createSnapTransaction([
-            'transaction_details' => ['order_id' => 'ORDER-'.$order->id, 'gross_amount' => (int) round((float) $order->total)],
+            'transaction_details' => ['order_id' => $midtransOrderId, 'gross_amount' => (int) round((float) $order->total)],
             'item_details' => $items,
             'customer_details' => ['first_name' => $order->user->name, 'email' => $order->user->email],
             'expiry' => ['unit' => 'hours', 'duration' => 24],
@@ -95,7 +100,12 @@ class PaymentService
             throw ValidationException::withMessages(['notification' => ['Invalid Midtrans notification.']]);
         }
 
-        $orderId = preg_replace('/^ORDER-/', '', (string) $notification['order_id']);
+        // Accept both legacy ("ORDER-7") and suffixed ("ORDER-7-1757299999") ids.
+        if (! preg_match('/^ORDER-(\d+)/', (string) $notification['order_id'], $matches)) {
+            throw ValidationException::withMessages(['order_id' => ['Order not found.']]);
+        }
+
+        $orderId = (int) $matches[1];
 
         return DB::transaction(function () use ($notification, $orderId) {
             $order = Order::with('payment')->lockForUpdate()->find($orderId);
@@ -127,8 +137,13 @@ class PaymentService
                 if (strtoupper($order->status) === 'PENDING_PAYMENT') {
                     $order->update(['status' => 'EXPIRED']);
                 }
-            } elseif (in_array($status, ['deny', 'cancel'], true)) {
-                $updates['status'] = $status === 'deny' ? 'failed' : 'cancelled';
+            } elseif ($status === 'deny') {
+                // A denied attempt (e.g. insufficient e-wallet balance or a declined
+                // card) must not cancel the order: Snap allows multiple payment
+                // attempts per order id until it is finally paid or expired.
+                $updates['status'] = 'failed';
+            } elseif ($status === 'cancel') {
+                $updates['status'] = 'cancelled';
                 if (strtoupper($order->status) === 'PENDING_PAYMENT') {
                     $order->update(['status' => 'CANCELLED']);
                 }

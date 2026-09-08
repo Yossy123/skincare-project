@@ -84,7 +84,7 @@ class OrderApiTest extends TestCase
         $product = Product::factory()->create([
             'category_id' => $category->id,
             'name' => 'Lumière Hydrating Cream',
-            'price' => 250000,
+            'price' => 200000,
             'weight' => 150,
             'stock' => 20,
             'is_active' => true,
@@ -104,16 +104,16 @@ class OrderApiTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.status', 'PENDING_PAYMENT')
-            ->assertJsonPath('data.subtotal', 500000)
+            ->assertJsonPath('data.subtotal', 400000)
             ->assertJsonPath('data.shipping_cost', 24000)
-            ->assertJsonPath('data.total', 524000)
+            ->assertJsonPath('data.total', 424000)
             ->assertJsonPath('data.shipping_courier', 'JNE')
             ->assertJsonPath('data.shipping_service', 'REG')
             ->assertJsonPath('data.shipping_address.name', 'Elena Rostova')
             ->assertJsonPath('data.items.0.product_name', 'Lumière Hydrating Cream')
             ->assertJsonPath('data.items.0.quantity', 2)
-            ->assertJsonPath('data.items.0.unit_price', 250000)
-            ->assertJsonPath('data.items.0.subtotal', 500000);
+            ->assertJsonPath('data.items.0.unit_price', 200000)
+            ->assertJsonPath('data.items.0.subtotal', 400000);
 
         // Stock must be decremented from 20 -> 18
         $this->assertEquals(18, $product->fresh()->stock);
@@ -122,18 +122,62 @@ class OrderApiTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'user_id' => $user->id,
             'status' => 'PENDING_PAYMENT',
-            'subtotal' => 500000,
-            'total' => 524000,
+            'subtotal' => 400000,
+            'total' => 424000,
         ]);
 
         $this->assertDatabaseHas('order_items', [
             'product_id' => $product->id,
             'product_name' => 'Lumière Hydrating Cream',
             'quantity' => 2,
-            'unit_price' => 250000,
+            'unit_price' => 200000,
         ]);
 
         $this->assertDatabaseHas('shipments', [
+            'courier' => 'JNE',
+            'service' => 'REG',
+            'status' => 'pending',
+        ]);
+    }
+
+    /**
+     * Test free-shipping promotion zeroes the shipping cost when subtotal reaches the threshold.
+     */
+    public function test_order_creation_applies_free_shipping_at_threshold(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        $address = Address::factory()->create([
+            'user_id' => $user->id,
+            'postal_code' => '12220',
+        ]);
+        $product = Product::factory()->create([
+            'name' => 'Lumière Glow Ritual Set',
+            'price' => 250000,
+            'weight' => 300,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/orders', [
+                'items' => [['product_id' => $product->id, 'quantity' => 2]], // subtotal 500.000
+                'address_id' => $address->id,
+                'courier' => 'JNE',
+                'service' => 'REG',
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.subtotal', 500000)
+            ->assertJsonPath('data.shipping_cost', fn ($v) => (float) $v === 0.0)
+            ->assertJsonPath('data.total', 500000)
+            ->assertJsonPath('data.shipping_courier', 'JNE')
+            ->assertJsonPath('data.shipping_service', 'REG')
+            ->assertJsonPath('data.shipping_etd', '2-3 Hari');
+
+        $this->assertDatabaseHas('shipments', [
+            'order_id' => $response->json('data.id'),
             'courier' => 'JNE',
             'service' => 'REG',
             'status' => 'pending',

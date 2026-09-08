@@ -43,6 +43,8 @@ class OrderResource extends JsonResource
                     'service' => $this->shipment->service,
                     'tracking_number' => $this->shipment->tracking_number,
                     'status' => $this->shipment->status,
+                    'shipped_at' => $this->shipment->shipped_at?->toIso8601String(),
+                    'delivered_at' => $this->shipment->delivered_at?->toIso8601String(),
                 ] : null;
             }),
             'payment' => $this->whenLoaded('payment', function () {

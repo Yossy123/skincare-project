@@ -75,8 +75,8 @@ class BookingSystemSeeder extends Seeder
                 'bio' => 'Fokus pada penanganan jerawat kronis, skin barrier repair, serta peremajaan kulit klinis non-invasif.',
                 'schedule_days' => 'Senin, Rabu, Jumat, Sabtu',
                 'available_days' => [1, 3, 5, 6],
-                'work_start_time' => '09:00:00',
-                'work_end_time' => '17:00:00',
+                'work_start_time' => '10:00:00',
+                'work_end_time' => '20:00:00',
                 'skills' => ['Acne Management', 'Skin Barrier Restoration', 'Laser & Peeling', 'Anti-Aging'],
             ],
             [
@@ -94,7 +94,7 @@ class BookingSystemSeeder extends Seeder
                 'schedule_days' => 'Selasa, Kamis, Sabtu, Minggu',
                 'available_days' => [2, 4, 6, 0],
                 'work_start_time' => '10:00:00',
-                'work_end_time' => '18:00:00',
+                'work_end_time' => '20:00:00',
                 'skills' => ['Deep Cleansing Facial', 'Lymphatic Drainage Massage', 'Scalp Care', 'Glow Infusion'],
             ],
             [
@@ -111,8 +111,8 @@ class BookingSystemSeeder extends Seeder
                 'bio' => 'Spesialis terapi peremajaan seluler, brightening infusion, dan penanganan hiperpigmentasi / flek hitam.',
                 'schedule_days' => 'Senin, Selasa, Kamis, Jumat',
                 'available_days' => [1, 2, 4, 5],
-                'work_start_time' => '09:00:00',
-                'work_end_time' => '16:00:00',
+                'work_start_time' => '10:00:00',
+                'work_end_time' => '20:00:00',
                 'skills' => ['Melasma & Pigmentation', 'Collagen Stimulation', 'Microcurrent Facial', 'Luminous Glow'],
             ],
         ];

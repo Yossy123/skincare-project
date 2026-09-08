@@ -71,7 +71,28 @@ class MidtransPaymentTest extends TestCase
         $response->assertCreated()->assertJsonPath('data.token', 'snap-token-123')->assertJsonPath('data.amount', 125000);
         $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'amount' => 125000, 'snap_token' => 'snap-token-123']);
         Http::assertSent(fn ($request) => $request->url() === 'https://app.sandbox.midtrans.com/snap/v1/transactions'
-            && $request['transaction_details']['gross_amount'] === 125000);
+            && $request['transaction_details']['gross_amount'] === 125000
+            && preg_match('/^ORDER-'.$order->id.'-\d+$/', (string) $request['transaction_details']['order_id']) === 1);
+    }
+
+    public function test_suffixed_midtrans_order_id_maps_back_to_local_order(): void
+    {
+        Config::set('services.midtrans.enabled', true);
+        $user = User::factory()->create();
+        $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'PENDING_PAYMENT', 'total' => 125000]);
+        Payment::factory()->create(['order_id' => $order->id, 'status' => 'pending', 'amount' => 125000]);
+
+        $notification = $this->notification($order, 'settlement');
+        $notification['order_id'] = 'ORDER-'.$order->id.'-'.now()->getTimestamp();
+        $notification['signature_key'] = hash(
+            'sha512',
+            $notification['order_id'].$notification['status_code'].$notification['gross_amount'].'test-server-key'
+        );
+
+        $this->postJson('/api/webhooks/midtrans', $notification)->assertOk();
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'PAID']);
+        $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'status' => 'paid']);
     }
 
     public function test_valid_notification_marks_payment_paid_and_is_idempotent(): void
@@ -103,6 +124,50 @@ class MidtransPaymentTest extends TestCase
         $wrongAmount = $this->notification($order, 'settlement', '1.00');
         $this->postJson('/api/webhooks/midtrans', $wrongAmount)->assertUnauthorized();
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'PENDING_PAYMENT']);
+    }
+
+    public function test_denied_payment_attempt_keeps_order_retryable(): void
+    {
+        Config::set('services.midtrans.enabled', true);
+        $user = User::factory()->create();
+        $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'PENDING_PAYMENT', 'total' => 125000]);
+        Payment::factory()->create(['order_id' => $order->id, 'status' => 'pending', 'amount' => 125000]);
+
+        $this->postJson('/api/webhooks/midtrans', $this->notification($order, 'deny'))->assertOk();
+
+        $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'status' => 'failed']);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'PENDING_PAYMENT']);
+    }
+
+    public function test_customer_can_retry_after_denial_and_settle(): void
+    {
+        Config::set('services.midtrans.enabled', true);
+        $user = User::factory()->create();
+        $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'PENDING_PAYMENT', 'total' => 125000]);
+        Payment::factory()->create(['order_id' => $order->id, 'status' => 'pending', 'amount' => 125000]);
+
+        // First attempt fails (e.g. insufficient GoPay balance)...
+        $this->postJson('/api/webhooks/midtrans', $this->notification($order, 'deny'))->assertOk();
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'PENDING_PAYMENT']);
+
+        // ...then a retry with another attempt settles successfully.
+        $this->postJson('/api/webhooks/midtrans', $this->notification($order, 'settlement'))->assertOk();
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'PAID']);
+        $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'status' => 'paid']);
+    }
+
+    public function test_cancel_notification_cancels_pending_order(): void
+    {
+        Config::set('services.midtrans.enabled', true);
+        $user = User::factory()->create();
+        $order = Order::factory()->create(['user_id' => $user->id, 'status' => 'PENDING_PAYMENT', 'total' => 125000]);
+        Payment::factory()->create(['order_id' => $order->id, 'status' => 'pending', 'amount' => 125000]);
+
+        $this->postJson('/api/webhooks/midtrans', $this->notification($order, 'cancel'))->assertOk();
+
+        $this->assertDatabaseHas('payments', ['order_id' => $order->id, 'status' => 'cancelled']);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'CANCELLED']);
     }
 
     /** @return array<string, string> */

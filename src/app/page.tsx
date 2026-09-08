@@ -8,7 +8,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { CatalogSkeleton } from '@/components/CatalogSkeleton';
 import { HealthStatusCard } from '@/components/HealthStatusCard';
 import { fetchCategories, fetchProducts, Category, Product } from '@/lib/api';
-import { Sparkles, ArrowRight, Star, ShieldCheck } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -46,11 +46,6 @@ export default function HomePage() {
         <section className="relative overflow-hidden bg-linear-to-b from-rose-100/60 via-pink-50/40 to-stone-50/60 dark:from-rose-950/30 dark:via-zinc-900 dark:to-zinc-950 py-16 sm:py-24 border-b border-rose-100/60 dark:border-zinc-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-rose-200/80 dark:border-zinc-700 text-rose-700 dark:text-rose-300 text-xs font-semibold mb-6 shadow-xs">
-                <Sparkles className="w-3.5 h-3.5 text-rose-500" />
-                <span>Modern Clean Cosmetics & Skincare</span>
-              </div>
-
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif tracking-tight text-zinc-900 dark:text-zinc-50 font-normal leading-[1.15]">
                 Reveal Your Natural, Radiant Glow
               </h1>
@@ -67,24 +62,13 @@ export default function HomePage() {
                   <span>Explore Catalog</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-
-                <Link
-                  href="/categories/skincare"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-semibold text-zinc-800 dark:text-zinc-200 bg-white/90 dark:bg-zinc-900/90 hover:bg-rose-50 dark:hover:bg-zinc-800 border border-rose-200/70 dark:border-zinc-700 transition-all shadow-xs"
-                >
-                  <span>Skincare Rituals</span>
-                </Link>
               </div>
 
               {/* Trust Badges */}
               <div className="mt-10 pt-6 border-t border-rose-200/50 dark:border-zinc-800 flex items-center gap-6 text-xs text-zinc-500 dark:text-zinc-400">
                 <div className="flex items-center gap-1.5">
-                  <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                  <span>4.9/5 Rating (1.2k+ Reviews)</span>
-                </div>
-                <div className="flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span>Dermatologist Approved</span>
+                  <span>Dermatologist Approved & Certified Clinical Formulas</span>
                 </div>
               </div>
             </div>

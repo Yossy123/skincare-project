@@ -168,6 +168,11 @@ function getAuthHeader(): Record<string, string> {
 }
 
 // 1. PUBLIC BOOKING ENDPOINTS
+export function resolvePhotoUrl(url: string): string {
+  if (url.startsWith('http') || url.startsWith('data:')) return url;
+  return `${API_BASE_URL.replace(/\/api\/?$/, '')}${url}`;
+}
+
 export async function fetchBookingServices(): Promise<BookingService[]> {
   const res = await fetch(`${API_BASE_URL}/booking/services`, {
     headers: { Accept: 'application/json' },
@@ -637,8 +642,8 @@ export const localDoctors: BookingDoctor[] = [
     skills: ['Laser Treatment', 'Acne Scar Subcision', 'Medical Peeling', 'Anti-Aging Injectables'],
     schedule_days: 'Senin - Jumat',
     available_days: [1, 2, 3, 4, 5],
-    work_start_time: '09:00',
-    work_end_time: '17:00',
+    work_start_time: '10:00',
+    work_end_time: '20:00',
     status: 'active',
   },
   {
@@ -656,7 +661,7 @@ export const localDoctors: BookingDoctor[] = [
     schedule_days: 'Selasa - Sabtu',
     available_days: [2, 3, 4, 5, 6],
     work_start_time: '10:00',
-    work_end_time: '18:00',
+    work_end_time: '20:00',
     status: 'active',
   },
   {
@@ -673,8 +678,8 @@ export const localDoctors: BookingDoctor[] = [
     skills: ['Glow Peeling', 'Hydrafacial Pro', 'Botox & Contour', 'Custom Serum Therapy'],
     schedule_days: 'Senin - Kamis & Sabtu',
     available_days: [1, 2, 3, 4, 6],
-    work_start_time: '09:00',
-    work_end_time: '16:00',
+    work_start_time: '10:00',
+    work_end_time: '20:00',
     status: 'active',
   },
 ];

@@ -112,7 +112,7 @@ export function CartDrawer() {
                   Your bag is currently empty
                 </h3>
                 <p className="text-xs text-zinc-400 dark:text-zinc-500 max-w-xs mb-6">
-                  Explore our luxury skincare, makeup, and fragrance formulations to get started.
+                  Explore our luxury skincare, makeup, and botanical formulations to get started.
                 </p>
                 <Link
                   href="/products"

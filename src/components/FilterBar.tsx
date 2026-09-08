@@ -40,7 +40,7 @@ export function FilterBar({
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search serums, creams, lip tints, fragrances..."
+            placeholder="Search serums, creams, lip tints, cleansers..."
             className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-rose-100 dark:border-zinc-700 focus:outline-hidden focus:ring-2 focus:ring-rose-400 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400"
           />
           {searchQuery && (

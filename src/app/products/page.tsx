@@ -114,7 +114,7 @@ function ProductsCatalogContent() {
             : 'Explore All Formulations'}
         </h1>
         <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-2">
-          Discover scientifically proven botanicals, radiant pigments, and signature fragrances.
+          Discover scientifically proven botanicals, radiant pigments, and clinical formulas.
         </p>
       </div>
 

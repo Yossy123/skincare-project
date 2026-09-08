@@ -12,7 +12,9 @@ export function useShippingRates(token: string | null, cartItems: CartItem[]) {
 
   const loadShippingRates = useCallback(
     async (destination: string | number, weightGrams: number) => {
-      if (!destination || weightGrams <= 0) return;
+      // An empty cart (e.g. right after order placement clears it) must never
+      // hit the rates API — the backend rejects requests without items.
+      if (!destination || weightGrams <= 0 || cartItems.length === 0) return;
 
       setShippingLoading(true);
       setShippingError(null);

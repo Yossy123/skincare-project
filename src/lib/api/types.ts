@@ -193,7 +193,7 @@ export interface ShippingRate {
 }
 
 export interface DestinationResult {
-  id: number;
+  id: string;
   label: string;
   province_name: string;
   city_name: string;
@@ -239,6 +239,8 @@ export interface Shipment {
   service: string;
   tracking_number: string | null;
   status: string;
+  shipped_at?: string | null;
+  delivered_at?: string | null;
 }
 
 export interface Payment {

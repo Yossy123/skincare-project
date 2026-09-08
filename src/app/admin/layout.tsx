@@ -85,8 +85,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login');
+    router.replace('/login');
   };
+
+  React.useEffect(() => {
+    if (mounted && (!isAuthenticated || !token)) {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [mounted, isAuthenticated, token, router, pathname]);
 
   // Prevent flash while hydrating auth state
   if (!mounted) {

@@ -8,6 +8,7 @@ import {
   updateDoctorAppointmentStatus,
   saveDoctorNotes,
   updatePatientMedicalRecord,
+  resolvePhotoUrl,
   Appointment,
 } from '@/lib/booking';
 import {
@@ -25,6 +26,7 @@ import {
   Stethoscope,
   Pill,
   ClipboardList,
+  Camera,
   ExternalLink,
 } from 'lucide-react';
 
@@ -292,6 +294,30 @@ export default function DoctorAppointmentDetailPage() {
             <p className="text-xs text-zinc-300 leading-relaxed italic bg-zinc-950/60 p-3.5 rounded-xl border border-zinc-800/60">
               &ldquo;{appointment.complaint || 'Tidak ada keluhan tertulis spesifik saat registrasi booking.'}&rdquo;
             </p>
+            {appointment.photo_url && (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 rounded-xl bg-zinc-950/60 border border-zinc-800/60">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={resolvePhotoUrl(appointment.photo_url)}
+                  alt="Foto Keluhan Pasien"
+                  className="w-24 h-24 object-cover rounded-xl border border-zinc-700 shadow-sm shrink-0"
+                />
+                <div className="space-y-1 text-xs">
+                  <p className="text-zinc-300 font-medium flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-rose-400" />
+                    Foto Keluhan yang Dilampirkan Pasien
+                  </p>
+                  <a
+                    href={resolvePhotoUrl(appointment.photo_url)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-rose-400 hover:underline inline-block"
+                  >
+                    Buka Foto Ukuran Penuh ↗
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Clinical Record Editor Form */}

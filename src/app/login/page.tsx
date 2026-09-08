@@ -14,6 +14,7 @@ import {
   EyeOff,
   ArrowRight,
   AlertCircle,
+  X,
 } from 'lucide-react';
 
 function LoginFormContent() {
@@ -78,7 +79,17 @@ function LoginFormContent() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-12 sm:py-16 w-full">
-      <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-rose-100 dark:border-zinc-800 p-6 sm:p-10 shadow-xl shadow-rose-950/5">
+      <div className="relative bg-white dark:bg-zinc-900 rounded-3xl border border-rose-100 dark:border-zinc-800 p-6 sm:p-10 shadow-xl shadow-rose-950/5">
+        {/* Close Button -> Home */}
+        <Link
+          href="/"
+          className="absolute right-4 top-4 sm:right-6 sm:top-6 p-2 rounded-2xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-stone-100 dark:hover:bg-zinc-800 transition-all cursor-pointer group"
+          title="Kembali ke Beranda"
+          aria-label="Kembali ke Beranda"
+        >
+          <X className="w-5 h-5 transition-transform group-hover:scale-110" />
+        </Link>
+
         {/* Card Header */}
         <div className="text-center mb-8">
           <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-500 flex items-center justify-center mb-3 shadow-xs border border-rose-100/60 dark:border-zinc-700">

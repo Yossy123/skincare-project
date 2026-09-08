@@ -44,8 +44,8 @@ export default function AdminDoctorsPage() {
   const [experience, setExperience] = useState('');
   const [bio, setBio] = useState('');
   const [scheduleDays, setScheduleDays] = useState('Senin – Jumat');
-  const [workStartTime, setWorkStartTime] = useState('09:00');
-  const [workEndTime, setWorkEndTime] = useState('17:00');
+  const [workStartTime, setWorkStartTime] = useState('10:00');
+  const [workEndTime, setWorkEndTime] = useState('20:00');
   const [submitting, setSubmitting] = useState(false);
 
   const loadDoctors = useCallback(async (showLoading = false) => {
@@ -92,8 +92,8 @@ export default function AdminDoctorsPage() {
     setExperience('5+ Tahun Pengalaman');
     setBio('');
     setScheduleDays('Senin – Jumat');
-    setWorkStartTime('09:00');
-    setWorkEndTime('17:00');
+    setWorkStartTime('10:00');
+    setWorkEndTime('20:00');
     setCreateModalOpen(true);
   };
 
@@ -107,8 +107,8 @@ export default function AdminDoctorsPage() {
     setExperience(doc.experience);
     setBio(doc.bio);
     setScheduleDays(doc.schedule_days);
-    setWorkStartTime(doc.work_start_time?.slice(0, 5) || '09:00');
-    setWorkEndTime(doc.work_end_time?.slice(0, 5) || '17:00');
+    setWorkStartTime(doc.work_start_time?.slice(0, 5) || '10:00');
+    setWorkEndTime(doc.work_end_time?.slice(0, 5) || '20:00');
     setEditModalOpen(true);
   };
 
@@ -247,8 +247,8 @@ export default function AdminDoctorsPage() {
               }`}
             >
               <div>
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="flex items-center gap-3">
+                <div className="flex items-start justify-between gap-2.5 mb-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div
                       className={`w-12 h-12 rounded-2xl bg-linear-to-tr ${
                         doc.avatar_color || 'from-rose-500 to-pink-500'
@@ -256,20 +256,27 @@ export default function AdminDoctorsPage() {
                     >
                       {doc.name.replace('dr. ', '').charAt(0)}
                     </div>
-                    <div>
-                      <h3 className="font-serif text-sm font-semibold text-white truncate">{doc.name}</h3>
-                      <p className="text-[11px] text-rose-400">{doc.specialization}</p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-serif text-sm font-semibold text-white truncate" title={doc.name}>
+                        {doc.name}
+                      </h3>
+                      <p className="text-[11px] text-rose-400 truncate">{doc.specialization}</p>
                     </div>
                   </div>
 
                   <span
-                    className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border ${
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide border shrink-0 ${
                       doc.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                        : 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        : 'bg-zinc-800 text-zinc-400 border-zinc-700'
                     }`}
                   >
-                    {doc.status.toUpperCase()}
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                        doc.status === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'
+                      }`}
+                    />
+                    {doc.status === 'active' ? 'Active' : 'Inactive'}
                   </span>
                 </div>
 

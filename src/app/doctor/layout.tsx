@@ -51,8 +51,14 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login');
+    router.replace('/login');
   };
+
+  React.useEffect(() => {
+    if (isHydrated && (!isAuthenticated || !token)) {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [isHydrated, isAuthenticated, token, router, pathname]);
 
   if (!isHydrated) {
     return (

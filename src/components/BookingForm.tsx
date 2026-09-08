@@ -18,7 +18,6 @@ import {
   Heart,
   Calendar as CalendarIcon,
   X,
-  Star,
   Image as ImageIcon,
   Ban,
   Video,
@@ -503,11 +502,6 @@ export function BookingForm() {
                         {doc.name.replace('dr. ', '').charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0 pr-5">
-                        <div className="flex items-center gap-1 text-amber-500 text-xs mb-0.5">
-                          <Star className="w-3.5 h-3.5 fill-amber-500" />
-                          <span className="font-semibold text-zinc-900 dark:text-zinc-100">{doc.rating}</span>
-                          <span className="text-[10px] text-zinc-400">({doc.review_count} ulasan)</span>
-                        </div>
                         <h3
                           className={`text-sm font-semibold truncate ${
                             isSelected ? 'text-rose-900 dark:text-rose-200' : 'text-zinc-900 dark:text-zinc-100'

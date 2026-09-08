@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
@@ -17,7 +17,40 @@ import {
   Sparkles,
   ShieldCheck,
   AlertCircle,
+  PackageCheck,
+  Copy,
+  Check,
+  CheckCircle2,
+  Loader2,
 } from 'lucide-react';
+import { payWithSnap } from '@/lib/midtrans';
+
+const SHIPMENT_STATUS_META: Record<string, { label: string; className: string }> = {
+  pending: {
+    label: 'Menunggu Pickup Kurir',
+    className: 'bg-amber-100/60 dark:bg-amber-950/40 border-amber-200/80 dark:border-amber-900/50 text-amber-800 dark:text-amber-200',
+  },
+  processing: {
+    label: 'Diproses Kurir',
+    className: 'bg-blue-100/60 dark:bg-blue-950/40 border-blue-200/80 dark:border-blue-900/50 text-blue-800 dark:text-blue-200',
+  },
+  shipped: {
+    label: 'Dalam Pengiriman',
+    className: 'bg-blue-100/60 dark:bg-blue-950/40 border-blue-200/80 dark:border-blue-900/50 text-blue-800 dark:text-blue-200',
+  },
+  delivered: {
+    label: 'Terkirim',
+    className: 'bg-emerald-100/60 dark:bg-emerald-950/40 border-emerald-200/80 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-200',
+  },
+  cancelled: {
+    label: 'Dibatalkan',
+    className: 'bg-rose-100/60 dark:bg-rose-950/40 border-rose-200/80 dark:border-rose-900/50 text-rose-800 dark:text-rose-200',
+  },
+};
+
+function getShipmentStatusMeta(status?: string | null) {
+  return SHIPMENT_STATUS_META[(status || '').toLowerCase()];
+}
 
 export default function OrderDetailPage() {
   const params = useParams();
@@ -31,8 +64,32 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'pending' | 'failed'>('idle');
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
+  const [resiCopied, setResiCopied] = useState(false);
 
   const isMidtransEnabled = process.env.NEXT_PUBLIC_MIDTRANS_ENABLED === 'true';
+
+  const refreshOrder = useCallback(async () => {
+    if (!token || !orderId) return;
+    try {
+      const data = await fetchOrderById(orderId, token);
+      setOrder(data);
+    } catch {
+      // keep showing the current snapshot on refresh failure
+    }
+  }, [orderId, token]);
+
+  const handleCopyResi = async () => {
+    if (!order?.shipment?.tracking_number) return;
+    try {
+      await navigator.clipboard.writeText(order.shipment.tracking_number);
+      setResiCopied(true);
+      setTimeout(() => setResiCopied(false), 3000);
+    } catch {
+      setError('Gagal menyalin nomor resi.');
+    }
+  };
 
   const handlePayment = async () => {
     if (!isMidtransEnabled) {
@@ -40,14 +97,51 @@ export default function OrderDetailPage() {
       return;
     }
     if (!token || !order) return;
-    setPaying(true); setError(null);
+    setPaying(true);
+    setError(null);
+    setPaymentStatus('idle');
+    setPaymentMessage(null);
     try {
       const payment = await createPayment(order.id, token);
-      if (payment.redirect_url) window.location.assign(payment.redirect_url);
-      else setError('Midtrans tidak mengembalikan halaman pembayaran.');
+
+      let settled = false;
+      const opened = await payWithSnap(payment.token, {
+        onSuccess: (result) => {
+          settled = true;
+          setPaymentStatus('success');
+          setPaymentMessage(
+            `Pembayaran berhasil${result.payment_type ? ` via ${result.payment_type}` : ''}. Status pesanan diperbarui otomatis setelah konfirmasi Midtrans.`
+          );
+          void refreshOrder();
+        },
+        onPending: () => {
+          settled = true;
+          setPaymentStatus('pending');
+          setPaymentMessage('Pembayaran menunggu penyelesaian — ikuti instruksi yang ditampilkan pada popup.');
+        },
+        onError: () => {
+          settled = true;
+          setPaymentStatus('failed');
+          setPaymentMessage('Pembayaran gagal diproses. Silakan coba lagi.');
+        },
+        onClose: () => {
+          if (!settled) setPaymentMessage(null);
+        },
+      });
+
+      if (!opened) {
+        if (payment.redirect_url) {
+          window.location.assign(payment.redirect_url);
+        } else {
+          setPaymentStatus('failed');
+          setPaymentMessage('Midtrans tidak mengembalikan halaman pembayaran.');
+        }
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Payment preparation failed.');
-    } finally { setPaying(false); }
+    } finally {
+      setPaying(false);
+    }
   };
 
   useEffect(() => {
@@ -230,6 +324,51 @@ export default function OrderDetailPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Shipment Tracking (Resi) */}
+              {order.shipment?.tracking_number && (
+                <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-rose-100 dark:border-zinc-800 p-6 shadow-xs space-y-4">
+                  <h3 className="font-serif text-base font-semibold text-zinc-900 dark:text-zinc-50 pb-3 border-b border-rose-50 dark:border-zinc-800 flex items-center gap-2">
+                    <PackageCheck className="w-4 h-4 text-rose-500" />
+                    <span>Pelacakan Pengiriman</span>
+                  </h3>
+
+                  <div className="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-800/40 border border-rose-50 dark:border-zinc-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1.5 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] uppercase font-semibold tracking-wider text-zinc-400">
+                          Nomor Resi ({order.shipment.courier})
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full border text-[11px] font-medium ${getShipmentStatusMeta(order.shipment.status)?.className ?? ''}`}>
+                          {getShipmentStatusMeta(order.shipment.status)?.label ?? order.shipment.status}
+                        </span>
+                      </div>
+                      <p className="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100 break-all">
+                        {order.shipment.tracking_number}
+                      </p>
+                      {(order.shipment.shipped_at || order.shipment.delivered_at) && (
+                        <div className="text-[11px] text-zinc-400 space-y-0.5">
+                          {order.shipment.shipped_at && (
+                            <p>Dikirim kurir: {new Date(order.shipment.shipped_at).toLocaleString('id-ID')}</p>
+                          )}
+                          {order.shipment.delivered_at && (
+                            <p>Tiba di tujuan: {new Date(order.shipment.delivered_at).toLocaleString('id-ID')}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleCopyResi}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer shrink-0"
+                    >
+                      {resiCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{resiCopied ? 'Tersalin!' : 'Salin Resi'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right Summary (5 cols) */}
@@ -262,25 +401,50 @@ export default function OrderDetailPage() {
                   </div>
                 </div>
 
-                {/* Payment Gateway Action (Phase 8 Midtrans) */}
+                {/* Payment Gateway Action (Midtrans Snap Popup) */}
                 <div className="space-y-3 pt-2">
                   {order.status.toUpperCase() === 'PENDING_PAYMENT' && (
                     <>
+                      {paymentStatus === 'success' && (
+                        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs leading-relaxed flex items-start gap-2.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                          <span className="font-medium">{paymentMessage}</span>
+                        </div>
+                      )}
+
+                      {paymentStatus === 'pending' && (
+                        <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-800 dark:text-amber-200 text-xs leading-relaxed flex items-start gap-2.5">
+                          <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                          <span className="font-medium">{paymentMessage}</span>
+                        </div>
+                      )}
+
+                      {paymentStatus === 'failed' && (
+                        <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-200 text-xs leading-relaxed flex items-start gap-2.5">
+                          <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                          <span className="font-medium">{paymentMessage}</span>
+                        </div>
+                      )}
+
                       {isMidtransEnabled ? (
                         <>
                           <button
                             disabled={paying}
                             onClick={handlePayment}
-                            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 cursor-pointer transition-all"
+                            className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold text-white bg-linear-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-md shadow-rose-500/20 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <CreditCard className="w-4 h-4" />
-                            <span>{paying ? 'Preparing payment...' : 'Pay Now with Midtrans'}</span>
+                            {paying ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <CreditCard className="w-4 h-4" />
+                            )}
+                            <span>{paying ? 'Menyiapkan pembayaran...' : 'Bayar Sekarang dengan Midtrans'}</span>
                           </button>
 
-                          <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-800 dark:text-amber-200 text-[11px] leading-relaxed flex items-start gap-2">
-                            <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                          <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 text-[11px] leading-relaxed flex items-start gap-2">
+                            <ShieldCheck className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                             <span>
-                              <strong>Secure payment:</strong> Payment status is confirmed by Midtrans server notification.
+                              Pembayaran dibuka sebagai <strong>popup aman Midtrans</strong> di halaman ini. Status pesanan diperbarui otomatis setelah konfirmasi server Midtrans.
                             </span>
                           </div>
                         </>

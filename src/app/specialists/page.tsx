@@ -5,7 +5,6 @@ import { Footer } from '@/components/Footer';
 import { API_BASE_URL } from '@/lib/api/client';
 import {
   Sparkles,
-  Star,
   Award,
   Calendar,
   Clock,
@@ -28,7 +27,8 @@ async function getDoctors(): Promise<BookingDoctor[]> {
     if (!res.ok) return [];
     const data = await res.json();
     return data.data || [];
-  } catch {
+  } catch (e) {
+    console.error('Failed to load doctors in specialists page:', e);
     return [];
   }
 }
@@ -41,16 +41,16 @@ export default async function SpecialistsPage() {
       <Navbar />
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-linear-to-b from-rose-100/70 via-pink-50/40 to-stone-50/60 dark:from-rose-950/30 dark:via-zinc-900 dark:to-zinc-950 py-14 sm:py-20 border-b border-rose-100/70 dark:border-zinc-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-rose-200/80 dark:border-zinc-700 text-rose-700 dark:text-rose-300 text-xs font-semibold mb-5 shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 text-rose-500" />
-              <span>Dermatology & Aesthetic Medical Board</span>
+        {/* Header Banner */}
+        <section className="relative overflow-hidden py-16 sm:py-20 bg-linear-to-b from-rose-100/60 via-pink-50/30 to-transparent dark:from-rose-950/20 dark:via-zinc-900/40 dark:to-transparent border-b border-rose-100/60 dark:border-zinc-800/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-rose-200/80 dark:border-zinc-700 text-rose-700 dark:text-rose-300 text-xs font-semibold mb-4 shadow-xs">
+              <Stethoscope className="w-3.5 h-3.5 text-rose-500" />
+              <span>Tim Medis & Aesthetician Berpengalaman</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif tracking-tight text-zinc-900 dark:text-zinc-50 font-normal leading-[1.2]">
-              Tim Dokter & Beauty Therapist Kami
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif text-zinc-900 dark:text-zinc-50 font-normal tracking-tight">
+              Clinical Specialists & Dermatologists
             </h1>
 
             <p className="mt-4 text-sm sm:text-base text-zinc-600 dark:text-zinc-300 max-w-2xl mx-auto leading-relaxed">
@@ -61,10 +61,6 @@ export default async function SpecialistsPage() {
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
                 <span>SIP & STR Resmi Kementerian Kesehatan</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                <span>Rating Pasien Rata-rata 4.9/5</span>
               </div>
             </div>
           </div>
@@ -90,11 +86,6 @@ export default async function SpecialistsPage() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 text-amber-500 mb-1">
-                        <Star className="w-3.5 h-3.5 fill-amber-500" />
-                        <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">{doc.rating}</span>
-                        <span className="text-[11px] text-zinc-400">({doc.review_count} ulasan)</span>
-                      </div>
                       <h3 className="font-serif font-semibold text-base text-zinc-900 dark:text-zinc-100 leading-snug truncate">
                         {doc.name}
                       </h3>

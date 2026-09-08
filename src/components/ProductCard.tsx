@@ -43,7 +43,6 @@ export function ProductCard({ product }: ProductCardProps) {
   const categoryGradients: Record<string, string> = {
     skincare: 'from-rose-100 via-pink-50 to-amber-50 dark:from-rose-950/40 dark:via-pink-950/20 dark:to-zinc-900',
     makeup: 'from-pink-100 via-rose-100 to-red-50 dark:from-pink-950/40 dark:via-rose-950/30 dark:to-zinc-900',
-    fragrance: 'from-amber-100 via-rose-50 to-orange-50 dark:from-amber-950/30 dark:via-rose-950/20 dark:to-zinc-900',
     'body-care': 'from-emerald-50 via-teal-50 to-rose-50 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-zinc-900',
     'hair-care': 'from-purple-50 via-pink-50 to-rose-50 dark:from-purple-950/30 dark:via-pink-950/20 dark:to-zinc-900',
   };

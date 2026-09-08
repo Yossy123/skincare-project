@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCartStore, useCartHydrated } from '@/store/useCartStore';
 import { useAuthStore, useAuthHydrated } from '@/store/useAuthStore';
 import { CartDrawer } from '@/components/CartDrawer';
@@ -22,6 +22,7 @@ import {
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState(false);
@@ -45,7 +46,9 @@ export function Navbar() {
 
   const handleLogout = async () => {
     setUserMenuOpen(false);
+    setMobileMenuOpen(false);
     await logout();
+    router.push('/login');
   };
 
   return (

@@ -1,55 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { Heart, Sparkles, Shield, Truck, RefreshCcw } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 export function Footer() {
   return (
     <footer className="bg-stone-100 dark:bg-zinc-900 border-t border-rose-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 text-sm">
-      {/* Value Propositions Banner */}
-      <div className="border-b border-rose-100/80 dark:border-zinc-800/80 py-8 bg-white/40 dark:bg-zinc-950/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm">100% Authentic</h4>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Directly sourced premium formulations</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 shrink-0">
-              <Truck className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm">Express Shipping</h4>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Fast nationwide courier delivery</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 shrink-0">
-              <Shield className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm">Dermatologist Tested</h4>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Cruelty-free & clean ingredients</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 shrink-0">
-              <RefreshCcw className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm">Easy Returns</h4>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">7-day satisfaction guarantee</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Footer Links */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Brand Info */}
@@ -63,7 +18,7 @@ export function Footer() {
             </span>
           </div>
           <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-            Elevating everyday beauty with scientifically formulated skincare, luminous makeup, and artisanal fragrances.
+            Elevating everyday beauty with scientifically formulated skincare, luminous makeup, and holistic body care.
           </p>
         </div>
 
@@ -75,7 +30,6 @@ export function Footer() {
           <ul className="space-y-2 text-xs">
             <li><Link href="/categories/skincare" className="hover:text-rose-500 transition-colors">Skincare</Link></li>
             <li><Link href="/categories/makeup" className="hover:text-rose-500 transition-colors">Makeup</Link></li>
-            <li><Link href="/categories/fragrance" className="hover:text-rose-500 transition-colors">Fragrance</Link></li>
             <li><Link href="/categories/body-care" className="hover:text-rose-500 transition-colors">Body Care</Link></li>
             <li><Link href="/categories/hair-care" className="hover:text-rose-500 transition-colors">Hair Care</Link></li>
           </ul>

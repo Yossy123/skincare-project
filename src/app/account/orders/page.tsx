@@ -191,6 +191,11 @@ export default function OrdersPage() {
                     <div className="text-zinc-500">
                       Recipient: <span className="font-medium text-zinc-800 dark:text-zinc-200">{order.shipping_address?.name}</span> ({order.shipping_address?.city})
                     </div>
+                    {order.shipment?.tracking_number && (
+                      <div className="text-zinc-500">
+                        Resi: <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">{order.shipment.tracking_number}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-right">

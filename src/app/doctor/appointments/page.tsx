@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   getDoctorAppointments,
   updateDoctorAppointmentStatus,
+  resolvePhotoUrl,
   Appointment,
 } from '@/lib/booking';
 import {
@@ -19,6 +20,10 @@ import {
   PlayCircle,
   RotateCw,
   Phone,
+  X,
+  Camera,
+  ClipboardList,
+  FileText,
 } from 'lucide-react';
 
 export default function DoctorAppointmentsPage() {
@@ -28,6 +33,7 @@ export default function DoctorAppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+  const [detailItem, setDetailItem] = useState<Appointment | null>(null);
 
   const loadAppointments = useCallback(async () => {
     try {
@@ -249,9 +255,13 @@ export default function DoctorAppointmentsPage() {
                       </span>
                     )}
                     {item.photo_url && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20">
+                      <button
+                        type="button"
+                        onClick={() => setDetailItem(item)}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                      >
                         📷 Foto Keluhan
-                      </span>
+                      </button>
                     )}
                   </div>
 
@@ -323,6 +333,15 @@ export default function DoctorAppointmentsPage() {
                     </button>
                   )}
 
+                  <button
+                    type="button"
+                    onClick={() => setDetailItem(item)}
+                    className="px-3.5 py-2 rounded-xl text-xs font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ClipboardList className="w-3.5 h-3.5" />
+                    <span>Detail Booking</span>
+                  </button>
+
                   <Link
                     href={`/doctor/appointments/${item.id}`}
                     className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5 shadow-sm"
@@ -334,6 +353,127 @@ export default function DoctorAppointmentsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Detail Booking Modal */}
+      {detailItem && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setDetailItem(null)}
+        >
+          <div
+            className="bg-zinc-900 border border-zinc-800 w-full max-w-2xl rounded-3xl p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto animate-in zoom-in-95"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between pb-4 border-b border-zinc-800">
+              <div className="space-y-1.5">
+                <span className="text-[11px] uppercase tracking-wider text-emerald-400 font-bold block">
+                  Detail Permintaan Pasien
+                </span>
+                <h3 className="text-xl font-serif text-white">{detailItem.booking_code}</h3>
+                {getStatusBadge(detailItem.status)}
+              </div>
+              <button
+                type="button"
+                onClick={() => setDetailItem(null)}
+                className="p-2 rounded-xl text-zinc-400 hover:text-white bg-zinc-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2">
+                <span className="text-[11px] text-zinc-500 font-semibold uppercase block">Data Pasien</span>
+                <div className="font-semibold text-sm text-white">{detailItem.patient?.name || 'Pasien Anonim'}</div>
+                <div className="text-zinc-400">Telepon: {detailItem.patient?.phone || '-'}</div>
+                <div className="text-zinc-400">Email: {detailItem.patient?.email || '-'}</div>
+                <div className="text-zinc-400">Alergi: {detailItem.patient?.allergies || 'Tidak ada catatan'}</div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2">
+                <span className="text-[11px] text-zinc-500 font-semibold uppercase block">Layanan & Jadwal</span>
+                <div className="font-semibold text-sm text-white">{detailItem.service?.name}</div>
+                <div className="text-zinc-400">
+                  Waktu: {detailItem.appointment_date}, {(detailItem.start_time || detailItem.appointment_time || '').substring(0, 5)} WIB
+                </div>
+                <div className="text-zinc-400">
+                  Format: {(detailItem.consultation_mode === 'online' || detailItem.consultation_type === 'online') ? 'Online Telemedicine' : 'In-Clinic Flagship'}
+                </div>
+              </div>
+
+              {detailItem.complaint && (
+                <div className="sm:col-span-2 p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-1.5">
+                  <span className="text-[11px] text-zinc-500 font-semibold uppercase flex items-center gap-1.5">
+                    <ClipboardList className="w-3.5 h-3.5 text-emerald-400" />
+                    Keluhan Pasien
+                  </span>
+                  <p className="text-zinc-300 leading-relaxed italic">&ldquo;{detailItem.complaint}&rdquo;</p>
+                </div>
+              )}
+
+              {detailItem.photo_url && (
+                <div className="sm:col-span-2 p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2">
+                  <span className="text-[11px] text-zinc-500 font-semibold uppercase flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-rose-400" />
+                    Foto Kondisi Kulit (Keluhan)
+                  </span>
+                  <div className="flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={resolvePhotoUrl(detailItem.photo_url)}
+                      alt="Foto Keluhan Pasien"
+                      className="w-32 h-32 object-cover rounded-xl border border-zinc-700 shadow-sm"
+                    />
+                    <div className="text-xs space-y-1">
+                      <p className="text-zinc-300 font-medium">Foto keluhan yang dilampirkan pasien saat booking</p>
+                      <a
+                        href={resolvePhotoUrl(detailItem.photo_url)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-rose-400 hover:underline inline-block"
+                      >
+                        Buka Foto Ukuran Penuh ↗
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(detailItem.diagnosis || detailItem.doctor_notes || detailItem.treatment_plan || detailItem.prescription) && (
+                <div className="sm:col-span-2 p-4 rounded-2xl bg-emerald-950/20 border border-emerald-900/40 space-y-1.5">
+                  <span className="text-[11px] text-emerald-400 font-semibold uppercase flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5" />
+                    Catatan Medis Tersimpan
+                  </span>
+                  {detailItem.diagnosis && (
+                    <p className="text-zinc-300"><strong>Diagnosis:</strong> {detailItem.diagnosis}</p>
+                  )}
+                  {detailItem.treatment_plan && (
+                    <p className="text-zinc-300"><strong>Treatment Plan:</strong> {detailItem.treatment_plan}</p>
+                  )}
+                  {detailItem.prescription && (
+                    <p className="text-zinc-300"><strong>Resep:</strong> {detailItem.prescription}</p>
+                  )}
+                  {detailItem.doctor_notes && (
+                    <p className="text-zinc-300"><strong>Catatan Dokter:</strong> {detailItem.doctor_notes}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-zinc-800">
+              <Link
+                href={`/doctor/appointments/${detailItem.id}`}
+                onClick={() => setDetailItem(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-300 border border-emerald-500/30 transition-all flex items-center gap-1.5"
+              >
+                <span>Buka Ruang Medis & Resep</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Product } from '@/lib/api';
 import { useCartStore } from '@/store/useCartStore';
 import { ProductImage } from '@/components/ProductImage';
-import { Sparkles, Eye, ShoppingBag, Check } from 'lucide-react';
+import { Eye, ShoppingBag, Check } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -63,16 +63,6 @@ export function ProductCard({ product }: ProductCardProps) {
           alt={product.name}
           className="absolute inset-0 w-full h-full object-cover"
         />
-
-        {/* Decorative cosmetic icon & bottle silhouette */}
-        <div className="flex flex-col items-center justify-center text-center p-4 transition-transform duration-500 group-hover:scale-105">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md shadow-md flex items-center justify-center text-rose-500 mb-2 border border-rose-100/60 dark:border-zinc-700">
-            <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-rose-400" />
-          </div>
-          <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 max-w-35 truncate">
-            {product.category?.name || 'Cosmetics'}
-          </span>
-        </div>
 
         {/* Category Pill Tag */}
         {product.category && (

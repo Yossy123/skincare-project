@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { BookingForm } from '@/components/BookingForm';
+import { BookingAuthGuard } from '@/components/BookingAuthGuard';
 import { Sparkles, ShieldCheck, Clock, Award, Calendar, HeartHandshake } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -67,7 +68,9 @@ export default function BookingPage() {
               </div>
             }
           >
-            <BookingForm />
+            <BookingAuthGuard>
+              <BookingForm />
+            </BookingAuthGuard>
           </Suspense>
 
           {/* Booking Perks & Guarantees */}

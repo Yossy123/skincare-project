@@ -114,6 +114,22 @@ class BookingTest extends TestCase
         $this->assertEquals('09:00', $slots[0]['start']);
     }
 
+    public function test_guest_cannot_create_an_appointment(): void
+    {
+        $response = $this->postJson('/api/booking', [
+            'service_id' => $this->service->id,
+            'doctor_id' => $this->doctor->id,
+            'consultation_mode' => 'offline',
+            'date' => Carbon::tomorrow()->format('Y-m-d'),
+            'start_time' => '10:00',
+            'name' => 'Guest Patient',
+            'phone' => '+6289988776655',
+        ]);
+
+        $response->assertUnauthorized();
+        $this->assertDatabaseCount('appointments', 0);
+    }
+
     public function test_can_create_appointment_successfully(): void
     {
         $futureDate = Carbon::tomorrow()->format('Y-m-d');
@@ -130,7 +146,7 @@ class BookingTest extends TestCase
             'notes' => 'Acne treatment notes',
         ];
 
-        $response = $this->postJson('/api/booking', $payload);
+        $response = $this->actingAs($this->customerUser, 'sanctum')->postJson('/api/booking', $payload);
         $response->assertStatus(201)
             ->assertJsonPath('success', true)
             ->assertJsonPath('data.status', 'confirmed');
@@ -162,7 +178,7 @@ class BookingTest extends TestCase
         ];
 
         // First booking succeeds
-        $first = $this->postJson('/api/booking', $payload);
+        $first = $this->actingAs($this->customerUser, 'sanctum')->postJson('/api/booking', $payload);
         $first->assertStatus(201);
 
         // Second booking for the exact same slot must be rejected with 422
@@ -176,7 +192,7 @@ class BookingTest extends TestCase
             'phone' => '+628222222222',
         ];
 
-        $second = $this->postJson('/api/booking', $payload2);
+        $second = $this->actingAs($this->customerUser, 'sanctum')->postJson('/api/booking', $payload2);
         $second->assertStatus(422)
             ->assertJsonValidationErrors(['start_time']);
     }
@@ -195,7 +211,7 @@ class BookingTest extends TestCase
             'phone' => '+628333333333',
         ];
 
-        $res = $this->postJson('/api/booking', $payload);
+        $res = $this->actingAs($this->customerUser, 'sanctum')->postJson('/api/booking', $payload);
         $res->assertStatus(422)
             ->assertJsonValidationErrors(['date']);
     }

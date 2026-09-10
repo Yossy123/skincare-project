@@ -76,7 +76,7 @@ Route::prefix('booking')->group(function () {
     Route::get('/services', [BookingController::class, 'getServices']);
     Route::get('/doctors', [BookingController::class, 'getDoctors']);
     Route::get('/available-slots', [BookingController::class, 'getAvailableSlots'])->middleware('throttle:60,1');
-    Route::post('/', [BookingController::class, 'store'])->middleware('throttle:booking');
+    Route::post('/', [BookingController::class, 'store'])->middleware(['auth:sanctum', 'throttle:booking']);
     Route::get('/lookup', [BookingController::class, 'lookup'])->middleware('throttle:booking');
 });
 

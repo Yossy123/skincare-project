@@ -48,6 +48,17 @@ const SHIPMENT_STATUS_META: Record<string, { label: string; className: string }>
   },
 };
 
+const ORDER_STATUS_META: Record<string, { label: string; className: string }> = {
+  PENDING_PAYMENT: { label: 'Menunggu Pembayaran', className: 'bg-amber-100/60 dark:bg-amber-950/40 border-amber-200/80 dark:border-amber-900/50 text-amber-800 dark:text-amber-200' },
+  PAID: { label: 'Sudah Dibayar', className: 'bg-emerald-100/60 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-200' },
+  PROCESSING: { label: 'Sedang Diproses', className: 'bg-blue-100/60 dark:bg-blue-950/40 border-blue-200/80 dark:border-blue-900/50 text-blue-800 dark:text-blue-200' },
+  SHIPPED: { label: 'Dalam Pengiriman', className: 'bg-blue-100/60 dark:bg-blue-950/40 border-blue-200/80 dark:border-blue-900/50 text-blue-800 dark:text-blue-200' },
+  DELIVERED: { label: 'Terkirim', className: 'bg-emerald-100/60 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-200' },
+  COMPLETED: { label: 'Selesai', className: 'bg-emerald-100/60 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-200' },
+  CANCELLED: { label: 'Dibatalkan', className: 'bg-rose-100/60 dark:bg-rose-950/40 border-rose-200/80 dark:border-rose-900/50 text-rose-800 dark:text-rose-200' },
+  EXPIRED: { label: 'Pembayaran Kedaluwarsa', className: 'bg-zinc-100/60 dark:bg-zinc-800 border-zinc-200/80 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300' },
+};
+
 function getShipmentStatusMeta(status?: string | null) {
   return SHIPMENT_STATUS_META[(status || '').toLowerCase()];
 }
@@ -75,10 +86,33 @@ export default function OrderDetailPage() {
     try {
       const data = await fetchOrderById(orderId, token);
       setOrder(data);
+      return data;
     } catch {
       // keep showing the current snapshot on refresh failure
     }
   }, [orderId, token]);
+
+  const waitForPaymentConfirmation = useCallback(async () => {
+    // Snap's browser callback can arrive before Midtrans's server notification.
+    // Poll our API; only the server-owned order status changes the UI.
+    for (let attempt = 0; attempt < 15; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 500 : 2000));
+      const latestOrder = await refreshOrder();
+      if (latestOrder && latestOrder.status.toUpperCase() !== 'PENDING_PAYMENT') {
+        const latestStatus = latestOrder.status.toUpperCase();
+        setPaymentStatus(latestStatus === 'PAID' ? 'success' : 'pending');
+        setPaymentMessage(
+          latestStatus === 'PAID'
+            ? 'Pembayaran telah dikonfirmasi oleh server Midtrans.'
+            : `Status order diperbarui menjadi ${latestStatus}.`
+        );
+        return;
+      }
+    }
+
+    setPaymentStatus('pending');
+    setPaymentMessage('Pembayaran diterima. Konfirmasi server Midtrans masih diproses, silakan refresh beberapa saat lagi.');
+  }, [refreshOrder]);
 
   const handleCopyResi = async () => {
     if (!order?.shipment?.tracking_number) return;
@@ -108,15 +142,16 @@ export default function OrderDetailPage() {
       const opened = await payWithSnap(payment.token, {
         onSuccess: (result) => {
           settled = true;
-          setPaymentStatus('success');
+          setPaymentStatus('pending');
           setPaymentMessage(
-            `Pembayaran berhasil${result.payment_type ? ` via ${result.payment_type}` : ''}. Status pesanan diperbarui otomatis setelah konfirmasi Midtrans.`
+            `Pembayaran berhasil${result.payment_type ? ` via ${result.payment_type}` : ''}. Menunggu konfirmasi server Midtrans...`
           );
-          void refreshOrder();
+          void waitForPaymentConfirmation();
         },
         onPending: () => {
           settled = true;
           setPaymentStatus('pending');
+          void waitForPaymentConfirmation();
           setPaymentMessage('Pembayaran menunggu penyelesaian — ikuti instruksi yang ditampilkan pada popup.');
         },
         onError: () => {
@@ -203,9 +238,9 @@ export default function OrderDetailPage() {
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-6 border-b border-rose-100 dark:border-zinc-800">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/60 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/50 text-amber-800 dark:text-amber-200 text-xs font-medium mb-2">
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
-              <span>Pending Payment Preparation</span>
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium mb-2 ${ORDER_STATUS_META[order?.status?.toUpperCase() || 'PENDING_PAYMENT']?.className ?? ORDER_STATUS_META.PENDING_PAYMENT.className}`}>
+              {order?.status?.toUpperCase() === 'PAID' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+              <span>{ORDER_STATUS_META[order?.status?.toUpperCase() || 'PENDING_PAYMENT']?.label ?? order?.status}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-serif text-zinc-900 dark:text-zinc-50 font-normal">
               Order #{orderId}
@@ -458,6 +493,12 @@ export default function OrderDetailPage() {
                         </div>
                       )}
                     </>
+                  )}
+                  {order.status.toUpperCase() === 'PAID' && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs leading-relaxed flex items-start gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                      <span className="font-medium">{paymentMessage || 'Pembayaran sudah dikonfirmasi oleh server Midtrans.'}</span>
+                    </div>
                   )}
                 </div>
               </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createOrder, ShippingRate } from '@/lib/api';
 import { CartItem } from '@/store/useCartStore';
@@ -13,6 +13,7 @@ export function useCheckoutOrder(
   const router = useRouter();
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
+  const idempotencyKeyRef = useRef<string | null>(null);
 
   const handlePlaceOrder = async (
     selectedAddressId: number | null,
@@ -37,8 +38,15 @@ export function useCheckoutOrder(
         service: selectedRate.service,
       };
 
-      const createdOrder = await createOrder(orderPayload, token);
+      if (!idempotencyKeyRef.current) {
+        idempotencyKeyRef.current = typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
 
+      const createdOrder = await createOrder(orderPayload, token, idempotencyKeyRef.current);
+
+      idempotencyKeyRef.current = null;
       clearCart();
       router.push(`/account/orders/${createdOrder.id}`);
     } catch (err: unknown) {

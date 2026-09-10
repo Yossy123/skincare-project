@@ -6,7 +6,8 @@ import type { OrderStorePayload, Order, PaginatedResponse } from './types';
  */
 export async function createOrder(
   payload: OrderStorePayload,
-  token: string
+  token: string,
+  idempotencyKey?: string
 ): Promise<Order> {
   const res = await fetch(`${API_BASE_URL}/orders`, {
     method: 'POST',
@@ -14,6 +15,7 @@ export async function createOrder(
       Accept: 'application/json',
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
+      ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
     },
     body: JSON.stringify(payload),
     cache: 'no-store',

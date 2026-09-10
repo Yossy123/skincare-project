@@ -183,7 +183,7 @@ export const useCartStore = create<CartStore>()(
       },
     }),
     {
-      name: 'lumiere-shopping-bag',
+      name: 'nobyderm-shopping-bag',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ items: state.items }),
     }

@@ -7,7 +7,7 @@ import { BookingForm } from '@/components/BookingForm';
 import { Sparkles, ShieldCheck, Clock, Award, Calendar, HeartHandshake } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Appointment Booking | Lumière Beauté',
+  title: 'Appointment Booking | NOBYDERM',
   description: 'Reservasi konsultasi kecantikan dan perawatan kulit eksklusif bersama dokter spesialis dan beauty therapist profesional.',
 };
 
@@ -107,7 +107,7 @@ export default function BookingPage() {
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Ada pertanyaan seputar treatment atau dokter?{' '}
               <Link href="/" className="font-semibold text-rose-600 dark:text-rose-400 hover:underline">
-                Hubungi Customer Care Lumière
+                Hubungi Customer Care NOBYDERM
               </Link>
             </p>
           </div>

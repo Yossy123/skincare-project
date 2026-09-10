@@ -168,7 +168,7 @@ function BookingSuccessContent() {
               <div>
                 <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block">Format Konsultasi</span>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                  {isOnline ? 'Online (Telekonsultasi Video Call)' : 'Offline (Lumière Beauté Clinic Lounge)'}
+                  {isOnline ? 'Online (Telekonsultasi Video Call)' : 'Offline (NOBYDERM Clinic Lounge)'}
                 </span>
               </div>
             </div>

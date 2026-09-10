@@ -15,8 +15,8 @@ import {
 import type { BookingDoctor } from '@/lib/booking';
 
 export const metadata: Metadata = {
-  title: 'Our Doctors & Specialists | Lumière Beauté',
-  description: 'Kenali dokter spesialis kulit dan aesthetician berpengalaman di Lumière Beauté. Jadwal konsultasi dan reservasi mudah.',
+  title: 'Our Doctors & Specialists | NOBYDERM',
+  description: 'Kenali dokter spesialis kulit dan aesthetician berpengalaman di NOBYDERM. Jadwal konsultasi dan reservasi mudah.',
 };
 
 async function getDoctors(): Promise<BookingDoctor[]> {

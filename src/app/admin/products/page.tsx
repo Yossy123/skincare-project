@@ -627,7 +627,7 @@ export default function AdminProductsPage() {
                   required
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  placeholder="e.g. Lumière Radiance Vitamin C Serum 30ml"
+                  placeholder="e.g. NOBYDERM Radiance Vitamin C Serum 30ml"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-100"
                 />
               </div>

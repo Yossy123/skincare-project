@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { useAuthStore, useAuthHydrated } from '@/store/useAuthStore';
 import {
-  Sparkles,
   Lock,
   Mail,
   Eye,
@@ -92,14 +92,21 @@ function LoginFormContent() {
 
         {/* Card Header */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-500 flex items-center justify-center mb-3 shadow-xs border border-rose-100/60 dark:border-zinc-700">
-            <Sparkles className="w-6 h-6 text-rose-400" />
+          <div className="flex justify-center mb-3">
+            <Image
+              src="/logo.png"
+              alt="NOBYDERM"
+              width={180}
+              height={48}
+              className="h-9 w-auto object-contain"
+              priority
+            />
           </div>
           <h1 className="text-2xl sm:text-3xl font-serif text-zinc-900 dark:text-zinc-50 font-normal">
             Welcome Back
           </h1>
           <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-            Sign in to access your Lumière beauty bag & orders
+            Sign in to access your NOBYDERM account & orders
           </p>
         </div>
 
@@ -130,7 +137,7 @@ function LoginFormContent() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="customer@lumiere.com"
+                placeholder="customer@nobyderm.com"
                 className="w-full pl-10 pr-4 py-3 text-xs sm:text-sm rounded-xl bg-stone-50 dark:bg-zinc-800/80 border border-rose-100 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-hidden focus:ring-2 focus:ring-rose-400"
               />
             </div>

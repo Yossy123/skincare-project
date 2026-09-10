@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCartStore, useCartHydrated } from '@/store/useCartStore';
 import { useAuthStore, useAuthHydrated } from '@/store/useAuthStore';
@@ -58,18 +59,15 @@ export function Navbar() {
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Brand Logo */}
             <div className="flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-2.5 group">
-                <span className="w-9 h-9 rounded-full bg-linear-to-tr from-rose-500 to-pink-400 flex items-center justify-center text-white shadow-sm shadow-rose-500/30 font-serif font-bold text-base transition-transform group-hover:scale-105">
-                  L
-                </span>
-                <div className="flex flex-col">
-                  <span className="font-serif tracking-widest text-lg sm:text-xl font-semibold bg-linear-to-r from-zinc-900 via-rose-950 to-zinc-800 dark:from-zinc-100 dark:via-rose-200 dark:to-zinc-300 bg-clip-text text-transparent">
-                    LUMIÈRE
-                  </span>
-                  <span className="text-[9px] tracking-[0.25em] uppercase text-rose-500 font-semibold -mt-1">
-                    BEAUTÉ
-                  </span>
-                </div>
+              <Link href="/" className="flex items-center group py-1">
+                <Image
+                  src="/logo.png"
+                  alt="NOBYDERM"
+                  width={200}
+                  height={52}
+                  className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-[1.02]"
+                  priority
+                />
               </Link>
             </div>
 

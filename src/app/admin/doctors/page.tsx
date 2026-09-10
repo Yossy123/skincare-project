@@ -385,7 +385,7 @@ export default function AdminDoctorsPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="doctor.name@lumiere.com"
+                      placeholder="doctor.name@nobyderm.com"
                       className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-rose-500"
                     />
                   </div>

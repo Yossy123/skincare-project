@@ -150,7 +150,7 @@ function getAuthHeader(): Record<string, string> {
 
   if (!token && typeof window !== 'undefined' && window.localStorage) {
     try {
-      const stored = localStorage.getItem('lumiere-auth-storage');
+      const stored = localStorage.getItem('nobyderm-auth-storage') || localStorage.getItem('lumiere-auth-storage');
       if (stored) {
         const parsed = JSON.parse(stored);
         token = parsed?.state?.token || null;

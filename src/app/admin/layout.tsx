@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore, useAuthHydrated } from '@/store/useAuthStore';
 import {
@@ -183,15 +184,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Brand Header */}
         <div className="p-6 border-b border-zinc-800/80 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-serif tracking-widest text-white font-normal">
-                LUMIÈRE
-              </span>
+            <div className="flex items-center gap-2.5">
+              <Image
+                src="/logo.png"
+                alt="NOBYDERM"
+                width={130}
+                height={35}
+                className="h-6 w-auto object-contain brightness-125"
+              />
               <span className="px-1.5 py-0.5 rounded-md bg-rose-500/20 text-rose-400 text-[10px] font-bold tracking-wider uppercase border border-rose-500/30">
                 ADMIN
               </span>
             </div>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">
               E-Commerce Analytics
             </p>
           </div>
@@ -284,9 +289,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <Menu className="w-5 h-5" />
           </button>
 
-          <span className="text-sm font-serif tracking-wider font-semibold text-white">
-            LUMIÈRE ADMIN
-          </span>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="NOBYDERM"
+              width={110}
+              height={30}
+              className="h-5 w-auto object-contain brightness-125"
+            />
+            <span className="text-xs font-serif tracking-wider font-semibold text-rose-400">
+              ADMIN
+            </span>
+          </div>
 
           <div className="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center text-xs font-bold">
             {user?.name ? user.name[0].toUpperCase() : 'A'}

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore, useAuthHydrated } from '@/store/useAuthStore';
 import {
@@ -13,9 +14,6 @@ import {
   Menu,
   X,
   ShieldAlert,
-  ArrowLeft,
-  Sparkles,
-  Stethoscope,
   HeartPulse,
 } from 'lucide-react';
 
@@ -27,45 +25,43 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const isHydrated = useAuthHydrated();
   const { user, token, isAuthenticated, logout } = useAuthStore();
+  const mounted = useAuthHydrated();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
     {
-      name: 'Doctor Overview',
+      name: 'Doctor Dashboard',
       href: '/doctor/dashboard',
       icon: LayoutDashboard,
+      description: 'Ringkasan & Metrik Pasien',
     },
     {
-      name: 'Jadwal & Konsultasi',
+      name: 'Schedule & Appointments',
       href: '/doctor/appointments',
       icon: CalendarDays,
+      description: 'Antrean Reservasi Konsultasi',
     },
     {
-      name: 'Pasien & Rekam Medis',
+      name: 'Patients & Emr Logs',
       href: '/doctor/patients',
       icon: Users,
+      description: 'Riwayat Rekam Medis & Foto',
     },
   ];
 
   const handleLogout = async () => {
     await logout();
-    router.replace('/login');
+    router.push('/login');
   };
 
-  React.useEffect(() => {
-    if (isHydrated && (!isAuthenticated || !token)) {
-      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
-    }
-  }, [isHydrated, isAuthenticated, token, router, pathname]);
-
-  if (!isHydrated) {
+  // Auth gate checking
+  if (!mounted) {
     return (
-      <div className="min-h-screen bg-stone-900 flex items-center justify-center text-white">
-        <div className="flex items-center gap-2 text-sm text-zinc-400">
-          <Sparkles className="w-4 h-4 text-emerald-500 animate-spin" />
-          <span>Memuat Portal Dokter...</span>
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
+          <span className="text-xs text-zinc-400 font-medium">Loading clinical workspace...</span>
         </div>
       </div>
     );
@@ -73,21 +69,27 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
 
   if (!isAuthenticated || !token) {
     return (
-      <div className="min-h-screen bg-stone-900 flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-zinc-900 border border-zinc-800 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto">
-            <Stethoscope className="w-6 h-6" />
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-zinc-900 border border-zinc-800 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-4">
+            <ShieldAlert className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-serif text-white">Autentikasi Dokter Dibutuhkan</h2>
-          <p className="text-xs text-zinc-400">
-            Anda harus masuk menggunakan akun Dokter / Dermatologist resmi untuk mengakses portal klinis ini.
+          <h2 className="text-xl font-serif text-white mb-2">Doctor Authentication Required</h2>
+          <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
+            Anda harus masuk sebagai dokter atau spesialis klinis untuk mengakses panel rekam medis dan jadwal konsultasi pasien ini.
           </p>
-          <div className="pt-2">
+          <div className="space-y-3">
             <Link
-              href={`/login?redirect=${encodeURIComponent(pathname)}`}
-              className="inline-block w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20"
+              href="/login?redirect=/doctor/dashboard"
+              className="block w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-950 transition-colors"
             >
-              Masuk sebagai Dokter
+              Sign In as Clinician
+            </Link>
+            <Link
+              href="/"
+              className="block w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition-colors"
+            >
+              Return to Storefront
             </Link>
           </div>
         </div>
@@ -95,32 +97,29 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
     );
   }
 
-  // Check role: must be 'doctor' or 'admin'
   if (user?.role !== 'doctor' && user?.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-stone-950 flex items-center justify-center p-4">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-zinc-900 border border-rose-900/40 text-center space-y-4 shadow-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-zinc-900 border border-zinc-800 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-serif text-white">Akses Dibatasi (403)</h2>
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            Akun Anda (<span className="text-zinc-200 font-medium">{user?.email}</span>) tidak memiliki izin dokter atau clinical specialist.
+          <h2 className="text-xl font-serif text-white mb-2">Access Forbidden</h2>
+          <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
+            Akun Anda (<span className="text-white font-medium">{user?.email}</span>) tidak memiliki izin dokter klinis. Silakan beralih ke akun yang berwenang.
           </p>
-          <div className="pt-2 flex flex-col gap-2">
+          <div className="flex gap-3">
             <Link
               href="/"
-              className="inline-flex items-center justify-center gap-1.5 w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-zinc-800 hover:bg-zinc-700 transition-all"
+              className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold transition-colors"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Kembali ke Beranda</span>
+              Kembali ke Toko
             </Link>
             <button
-              type="button"
               onClick={handleLogout}
-              className="w-full py-2 px-4 rounded-xl text-xs text-zinc-500 hover:text-zinc-300 transition-all cursor-pointer"
+              className="flex-1 py-2.5 rounded-xl bg-rose-600/20 text-rose-300 hover:bg-rose-600/30 text-xs font-semibold border border-rose-500/30 transition-colors"
             >
-              Ganti Akun (Logout)
+              Ganti Akun
             </button>
           </div>
         </div>
@@ -129,7 +128,7 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 text-zinc-100 flex">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col md:flex-row antialiased">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
@@ -147,15 +146,19 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
         {/* Brand Header */}
         <div className="p-6 border-b border-zinc-800/80 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-serif tracking-widest text-white font-normal">
-                LUMIÈRE
-              </span>
+            <div className="flex items-center gap-2.5">
+              <Image
+                src="/logo.png"
+                alt="NOBYDERM"
+                width={130}
+                height={35}
+                className="h-6 w-auto object-contain brightness-125"
+              />
               <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-[10px] font-bold tracking-wider uppercase border border-emerald-500/30">
                 CLINICIAN
               </span>
             </div>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-1">
               Doctor & Specialist Portal
             </p>
           </div>
@@ -257,9 +260,18 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
             <Menu className="w-5 h-5" />
           </button>
 
-          <span className="text-sm font-serif tracking-wider font-semibold text-white">
-            LUMIÈRE DOCTOR PORTAL
-          </span>
+          <div className="flex items-center gap-2">
+            <Image
+              src="/logo.png"
+              alt="NOBYDERM"
+              width={110}
+              height={30}
+              className="h-5 w-auto object-contain brightness-125"
+            />
+            <span className="text-xs font-serif tracking-wider font-semibold text-emerald-400">
+              DOCTOR PORTAL
+            </span>
+          </div>
 
           <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-bold">
             {user?.name ? user.name[0].toUpperCase() : 'D'}

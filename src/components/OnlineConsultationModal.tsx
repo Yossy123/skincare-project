@@ -32,7 +32,7 @@ const TOPICS = [
   'Konsultasi Perawatan Lainnya',
 ];
 
-// Nomor WhatsApp resmi klinik Lumière Beauté (Sementara untuk pengetesan: 081211462862)
+// Nomor WhatsApp resmi klinik NOBYDERM (Sementara untuk pengetesan: 081211462862)
 const CLINIC_WA_NUMBER = process.env.NEXT_PUBLIC_CLINIC_WA_NUMBER || '6281211462862';
 
 export function OnlineConsultationModal({ isOpen, onClose }: OnlineConsultationModalProps) {
@@ -66,7 +66,7 @@ export function OnlineConsultationModal({ isOpen, onClose }: OnlineConsultationM
 
     // Format WhatsApp Message with Google Meet notice
     const message = [
-      `Halo Dokter & Konselor Lumière Beauté, saya ingin mengajukan *Konsultasi Online via Google Meet*:`,
+      `Halo Dokter & Konselor NOBYDERM, saya ingin mengajukan *Konsultasi Online via Google Meet*:`,
       ``,
       `👤 *Nama Pasien:* ${name.trim()}`,
       `📱 *No. WhatsApp:* ${phone.trim()}`,

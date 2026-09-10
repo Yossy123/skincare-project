@@ -906,7 +906,7 @@ export function BookingForm() {
             </div>
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-rose-400 shrink-0" />
-              <span>Tersimpan aman di database Lumière Beauté</span>
+              <span>Tersimpan aman di database NOBYDERM</span>
             </div>
           </div>
         </div>

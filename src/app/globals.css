@@ -12,6 +12,37 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/*
+ * NOBYDERM brand palette — redefines the rose & pink scales as a
+ * champagne-gold ramp derived from the logo gold (#CDA162).
+ * 400 = exact logo gold; 500/600 are deepened for button/text contrast.
+ */
+@theme {
+  --color-rose-50: #FBF6EC;
+  --color-rose-100: #F6EAD2;
+  --color-rose-200: #EFD9AF;
+  --color-rose-300: #E5C488;
+  --color-rose-400: #CDA162;
+  --color-rose-500: #B98752;
+  --color-rose-600: #9A6B36;
+  --color-rose-700: #7C5426;
+  --color-rose-800: #5C3E1A;
+  --color-rose-900: #3F2A0F;
+  --color-rose-950: #25190A;
+
+  --color-pink-50: #FCF6EE;
+  --color-pink-100: #F7EBD6;
+  --color-pink-200: #F0DBB6;
+  --color-pink-300: #E7C893;
+  --color-pink-400: #D6B173;
+  --color-pink-500: #C39A5E;
+  --color-pink-600: #A37B41;
+  --color-pink-700: #836029;
+  --color-pink-800: #62461C;
+  --color-pink-900: #433010;
+  --color-pink-950: #281C0B;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

@@ -154,7 +154,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                   <Sparkles className="w-16 h-16 sm:w-20 sm:h-20 text-rose-400" />
                 </div>
                 <span className="text-xs font-serif tracking-widest text-zinc-500 uppercase">
-                  {product.category?.name || 'Lumière Beauté'}
+                  {product.category?.name || 'NOBYDERM'}
                 </span>
                 <span className="text-[11px] text-zinc-400 mt-1">
                   Clean Formula • Cruelty Free

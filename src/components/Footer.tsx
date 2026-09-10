@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Heart } from 'lucide-react';
 
 export function Footer() {
@@ -10,15 +11,16 @@ export function Footer() {
         {/* Brand Info */}
         <div className="space-y-3 md:col-span-1">
           <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-full bg-linear-to-tr from-rose-500 to-pink-400 flex items-center justify-center text-white font-serif font-bold text-xs">
-              L
-            </span>
-            <span className="font-serif tracking-widest text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              LUMIÈRE BEAUTÉ
-            </span>
+            <Image
+              src="/logo.png"
+              alt="NOBYDERM"
+              width={160}
+              height={42}
+              className="h-8 w-auto object-contain"
+            />
           </div>
           <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
-            Elevating everyday beauty with scientifically formulated skincare, luminous makeup, and holistic body care.
+            Elevating everyday skincare with scientifically formulated treatments, medical aesthetics, and clinical dermatological care.
           </p>
         </div>
 
@@ -75,7 +77,7 @@ export function Footer() {
       {/* Copyright */}
       <div className="border-t border-rose-100 dark:border-zinc-800/80 py-6 text-center text-xs text-zinc-500 dark:text-zinc-500">
         <p className="flex items-center justify-center gap-1">
-          <span>&copy; {new Date().getFullYear()} Lumière Beauté. Built with Next.js, Laravel & Tailwind CSS.</span>
+          <span>&copy; {new Date().getFullYear()} NOBYDERM. All rights reserved.</span>
           <Heart className="w-3.5 h-3.5 text-rose-500 inline fill-rose-500" />
         </p>
       </div>

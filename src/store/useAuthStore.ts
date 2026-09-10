@@ -107,6 +107,7 @@ export const useAuthStore = create<AuthState>()(
           useCartStore.getState().clearCart();
           useCartStore.getState().closeCart();
           if (typeof window !== 'undefined' && window.localStorage) {
+            window.localStorage.removeItem('nobyderm-shopping-bag');
             window.localStorage.removeItem('lumiere-shopping-bag');
           }
         } catch {
@@ -115,7 +116,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'lumiere-auth-storage',
+      name: 'nobyderm-auth-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,

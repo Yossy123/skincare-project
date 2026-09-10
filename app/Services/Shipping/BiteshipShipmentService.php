@@ -54,7 +54,7 @@ class BiteshipShipmentService
         $biteshipOrderPayload = [
             'shipper_contact_name' => $this->client->getOriginContactName(),
             'shipper_contact_phone' => $this->client->getOriginContactPhone(),
-            'shipper_organization' => 'Lumiere Beaute',
+            'shipper_organization' => 'NOBYDERM',
             'origin_contact_name' => $this->client->getOriginContactName(),
             'origin_contact_phone' => $this->client->getOriginContactPhone(),
             'origin_address' => $this->client->getOriginAddress(),

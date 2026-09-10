@@ -41,7 +41,7 @@ return [
         'origin_postal_code' => (int) env('BITESHIP_ORIGIN_POSTAL_CODE', 12220),
         'origin_area_id' => env('BITESHIP_ORIGIN_AREA_ID', 'IDNP6IDNC417IDND2093IDNZ12220'),
         'origin_address' => env('BITESHIP_ORIGIN_ADDRESS', 'Jl. Kebayoran Lama No. 12, Jakarta Selatan'),
-        'origin_contact_name' => env('BITESHIP_ORIGIN_CONTACT_NAME', 'Lumiere Beaute Store'),
+        'origin_contact_name' => env('BITESHIP_ORIGIN_CONTACT_NAME', 'NOBYDERM Store'),
         'origin_contact_phone' => env('BITESHIP_ORIGIN_CONTACT_PHONE', '081234567890'),
         'timeout' => (int) env('BITESHIP_TIMEOUT', 10),
         'free_shipping_min_spend' => (float) env('SHIPPING_FREE_MIN_SPEND', 500000),

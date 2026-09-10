@@ -34,7 +34,7 @@ class BiteshipClient
         $this->originPostalCode = (int) config('services.biteship.origin_postal_code', 12220);
         $this->originAreaId = (string) config('services.biteship.origin_area_id', 'IDNP6IDNC417IDND2093IDNZ12220');
         $this->originAddress = (string) config('services.biteship.origin_address', 'Jl. Kebayoran Lama No. 12, Jakarta Selatan');
-        $this->originContactName = (string) config('services.biteship.origin_contact_name', 'Lumiere Beaute Store');
+        $this->originContactName = (string) config('services.biteship.origin_contact_name', 'NOBYDERM Store');
         $this->originContactPhone = (string) config('services.biteship.origin_contact_phone', '081234567890');
         $this->timeout = (int) config('services.biteship.timeout', 10);
         $this->webhookSecret = (string) config('services.biteship.webhook_secret', '');
